@@ -9,6 +9,8 @@ final class WindowPresenter {
         let window: NSWindow
         if let existing = windows[id] {
             window = existing
+            // Rebuild the content so a reopened window shows fresh state.
+            window.contentViewController = NSHostingController(rootView: content())
         } else {
             window = NSWindow(contentViewController: NSHostingController(rootView: content()))
             window.title = title

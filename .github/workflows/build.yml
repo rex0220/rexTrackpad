@@ -1,0 +1,26 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Debug build and unit tests
+        run: |
+          xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad \
+            -configuration Debug -destination 'platform=macOS' test
+
+      - name: Release build (Universal)
+        run: |
+          xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad \
+            -configuration Release -destination 'generic/platform=macOS' \
+            ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO build
