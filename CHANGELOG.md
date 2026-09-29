@@ -1,17 +1,18 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-09-30
 
 ### Added
 - **Position-aware taps**: a 3-finger tap on the left or right side of the trackpad
   (by default: Back / Forward) can differ from a tap in the middle (Reload). The side
-  width is adjustable in Gesture Settings. A side without its own assignment acts like
-  the plain 3-finger tap, so assignments saved by earlier versions keep working.
-
+  width is adjustable in Settings › Sensitivity. A side without its own assignment acts
+  like the plain 3-finger tap, so assignments saved by earlier versions keep working.
 - **Circle gestures**: draw a circle with three fingers (default: clockwise → Reopen
   Closed Tab, counter-clockwise → Hard Reload) or with one finger (not assigned by
   default; the pointer moves while drawing). Minimum size and required turn are in
-  Settings › Sensitivity.
+  Settings › Sensitivity. If you saved gesture assignments in an earlier version, the
+  new gestures start unassigned: pick actions in Settings › Assignments, or press
+  *Restore Default Gestures*.
 - **Reopen Closed Tab** action (⇧⌘T).
 
 ### Changed
@@ -28,11 +29,14 @@
 ### 日本語
 - **追加**: 位置で分けるタップ。トラックパッドの左側・右側での3本指タップに、中央
   （再読み込み）とは別の操作を割り当てられます（初期設定は左側＝戻る、右側＝進む）。
-  区域の幅は「ジェスチャー設定」で調整できます。左右に割り当てがない場合は普通の
+  区域の幅は設定の「感度」タブで調整できます。左右に割り当てがない場合は普通の
   3本指タップと同じ動作なので、以前のバージョンで保存した割り当てもそのまま使えます。
 - **追加**: 円のジェスチャー。3本指で円を描く（初期設定: 時計回り＝閉じたタブを開き直す、
   反時計回り＝強制再読み込み）、または1本指で円を描く（初期設定は割り当てなし。描いている
   間ポインターも動きます）。最小の大きさと必要な回転角は設定の「感度」タブで変えられます。
+  以前のバージョンでジェスチャーの割り当てを保存していた場合、新しいジェスチャーは
+  割り当てなしで始まります。設定の「割り当て」タブで操作を選ぶか、「ジェスチャーを
+  初期設定に戻す」を押してください。
 - **追加**: 「閉じたタブを開き直す」（⇧⌘T）。
 - **変更**: 設定を 1 つのウィンドウ（メニューの「設定…」、⌘,）にまとめました。「割り当て」
   「感度」「ブラウザー」「権限」の 4 タブで、全ジェスチャーをポップアップの一覧から割り当て
