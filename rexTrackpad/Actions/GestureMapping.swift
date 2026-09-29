@@ -34,6 +34,9 @@ struct GestureMapping: Equatable, Sendable {
         // Draw a circle with three fingers.
         .threeFingerCircleClockwise: .browser(.reopenClosedTab),
         .threeFingerCircleCounterClockwise: .browser(.hardReload),
+        // One-finger circles need no macOS settings changes.
+        .oneFingerCircleClockwise: .browser(.forward),
+        .oneFingerCircleCounterClockwise: .browser(.back),
     ])
 
     /// The action to run: the gesture's own binding, else its fallback's

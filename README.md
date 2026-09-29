@@ -59,7 +59,8 @@ When any other app is frontmost, gestures do nothing.
 | 4-finger swipe right | Forward | ⚠️ Only if macOS is not using 4-finger horizontal swipes |
 | 3-finger circle, clockwise | Reopen Closed Tab | ⚠️ Only if macOS is not using 3-finger swipes (a circle starts like a swipe) |
 | 3-finger circle, counter-clockwise | Hard Reload | ⚠️ Same condition |
-| 1-finger circle, clockwise / counter-clockwise | *(not assigned)* | ✅ Yes — the pointer moves while you draw |
+| 1-finger circle, clockwise | Forward | ✅ Yes — the pointer moves while you draw |
+| 1-finger circle, counter-clockwise | Back | ✅ Yes (same) |
 
 ### Why some gestures are "off" by default
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- One-finger circles are assigned by default: clockwise → Forward, counter-clockwise →
+  Back. They work without changing any macOS settings. (Existing saved assignments are
+  kept; use *Restore Default Gestures* to get the new defaults.)
+
+### 日本語
+- **変更**: 1本指の円に初期設定の操作を割り当てました（時計回り＝進む、反時計回り＝戻る）。
+  macOS の設定を変えずに使えます。保存済みの割り当てはそのまま残るので、新しい初期設定に
+  するには「ジェスチャーを初期設定に戻す」を押してください。
+
 ## 0.3.0 — 2026-09-30
 
 ### Added

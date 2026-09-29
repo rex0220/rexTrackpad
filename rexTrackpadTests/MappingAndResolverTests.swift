@@ -40,6 +40,8 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeRight), .browser(.forward))
         XCTAssertEqual(mapping.action(for: .threeFingerCircleClockwise), .browser(.reopenClosedTab))
         XCTAssertEqual(mapping.action(for: .threeFingerCircleCounterClockwise), .browser(.hardReload))
+        XCTAssertEqual(mapping.action(for: .oneFingerCircleClockwise), .browser(.forward))
+        XCTAssertEqual(mapping.action(for: .oneFingerCircleCounterClockwise), .browser(.back))
     }
 
     func testUnboundZoneTapFallsBackToThePlainTap() {
