@@ -1,0 +1,326 @@
+# rexTrackpad
+
+[English](README.md) | 日本語
+
+macOS 用のトラックパッドジェスチャーユーティリティです。
+
+rexTrackpad は、トラックパッドの複数本指ジェスチャーを Google Chrome・Safari・
+Microsoft Edge・Firefox のブラウザー操作に変換する、小さなメニューバー常駐アプリです。
+タッチを**観測するだけ**で、トラックパッドのイベントを止めたり横取りしたりしないため、
+通常のクリック・スクロール・macOS のジェスチャーはそのまま使えます。
+
+> 状態: v0.1（初期開発版）
+
+## 機能
+
+- ページの再読み込み
+- 強制再読み込み
+- 前のタブ / 次のタブ
+- 戻る / 進む
+- 新しいタブ
+- タブを閉じる
+- ブラウザーごとの有効 / 無効
+- メニューから、どのジェスチャーにどの操作でも割り当て可能
+- macOS の標準ジェスチャーとの競合を自動で回避
+- ログイン時に起動（`SMAppService`）
+- Debug Monitor（Debug ビルドのみ）: タッチ・方向・距離・時間をリアルタイム表示
+- メニューとウィンドウの日本語表示（macOS の言語設定に従う）
+
+## 対応ブラウザー
+
+| ブラウザー | Bundle Identifier |
+|---|---|
+| Chrome | `com.google.Chrome`（+ `.beta`、`.dev`、`.canary`） |
+| Safari | `com.apple.Safari`、`com.apple.SafariTechnologyPreview` |
+| Edge | `com.microsoft.edgemac`（+ `.Beta`、`.Dev`、`.Canary`） |
+| Firefox | `org.mozilla.firefox`、`org.mozilla.firefoxdeveloperedition`、`org.mozilla.nightly` |
+
+これ以外のアプリが前面にあるときは、ジェスチャーをしても何も起きません。
+
+## 初期設定のジェスチャー
+
+| ジェスチャー | 操作 | そのまま使えるか |
+|---|---|---|
+| 3本指タップ | 再読み込み | ✅ 使える（「調べる＆データ検出」が「3本指でタップ」の場合を除く） |
+| 4本指タップ | 強制再読み込み | ✅ 使える |
+| 3本指で左にスワイプ | 前のタブ | ⚠️ macOS が3本指の左右スワイプを使っていない場合のみ |
+| 3本指で右にスワイプ | 次のタブ | ⚠️ macOS が3本指の左右スワイプを使っていない場合のみ |
+| 3本指で上にスワイプ | 新しいタブ | ⚠️ Mission Control が3本指の上スワイプでない場合のみ |
+| 3本指で下にスワイプ | タブを閉じる | ⚠️ App Exposé が3本指の下スワイプでない場合のみ |
+| 4本指で左にスワイプ | 戻る | ⚠️ macOS が4本指の左右スワイプを使っていない場合のみ |
+| 4本指で右にスワイプ | 進む | ⚠️ macOS が4本指の左右スワイプを使っていない場合のみ |
+
+### 一部のジェスチャーが最初は「無効」になっている理由
+
+macOS の初期設定では、3本指・4本指のスワイプは「フルスクリーンアプリケーション間を
+スワイプ」「Mission Control」「App Exposé」に使われています。rexTrackpad はイベントを
+止めない設計なので、競合するスワイプをすると、macOS の動作とブラウザー操作の**両方**が
+実行されてしまいます。
+
+「通常の Mac 操作を邪魔しないこと」を最優先にしているため、
+**「macOS のジェスチャーと競合させない」は初期状態でオン**です。rexTrackpad は
+トラックパッドの設定を読み取り、macOS が使っているジェスチャーを無視します。メニューでは、
+そのジェスチャーに「（macOS が使用中のため無効）」と表示されます。
+
+タップには対応する macOS の標準ジェスチャーが（初期設定では）ないため、すぐに使えます。
+
+**タブ切り替えのスワイプを使うには**、macOS 側のジェスチャーを4本指に移します。
+
+1. システム設定 › トラックパッド › その他のジェスチャ を開く
+2. 「フルスクリーンアプリケーション間をスワイプ」→ **4本指で左右にスワイプ**
+3. 「Mission Control」→ **4本指で上にスワイプ**、「App Exposé」→ **4本指で下にスワイプ**（またはオフ）
+
+これで3本指のスワイプが使えるようになります。4本指の戻る/進むは、macOS が4本指を
+使っている間は無効のままです。割り当てはメニューの「**ジェスチャー**」からいつでも変えられます。
+
+## 動作環境
+
+- macOS 13 Ventura 以降（現行の macOS で開発）
+- Apple Silicon または Intel Mac（Release ビルドは Universal）
+- 内蔵トラックパッドまたは Magic Trackpad
+- ビルドには Xcode 16 以降
+
+## インストール
+
+署名済みのバイナリはまだ配布していません。ソースからビルドしてください。
+
+1. Release 版をビルドし（下記）、`rexTrackpad.app` を `/Applications` に移動します。
+2. 起動すると、メニューバーに手のアイコンが表示されます（Dock には表示されません）。
+3. 求められたら**アクセシビリティ**を許可します（[権限](#権限)を参照）。
+
+## ビルド
+
+```sh
+git clone https://github.com/rex0220/rexTrackpad.git
+cd rexTrackpad
+open rexTrackpad.xcodeproj          # Xcode で Product › Run
+```
+
+コマンドラインの場合:
+
+```sh
+# Debug ビルド + 単体テスト
+xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Debug test
+
+# Universal の Release ビルド（arm64 + x86_64）
+xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Release \
+  -derivedDataPath build ONLY_ACTIVE_ARCH=NO
+open build/Build/Products/Release
+```
+
+### コード署名
+
+初期状態では「ローカルで実行するための署名」（アドホック署名）でビルドするので、
+Apple の開発者アカウントがなくてもビルドできます。署名の設定は
+`Config/Signing.xcconfig` にあります。
+
+アドホック署名はビルドのたびに変わり、そのたびに macOS はアクセシビリティの許可を
+取り消します（[権限](#権限)を参照）。ビルドし直しても許可を残したい場合は、自分の
+**Apple Development** 証明書で署名してください。無料の Apple Account（Personal Team）で
+十分です。
+
+1. Xcode › Settings › Accounts › **+** から Apple Account でサインインします。
+2. ローカル専用の上書き設定（Git の管理外）を作り、Team ID を書き込みます。
+
+   ```sh
+   cp Config/Signing.local.xcconfig.example Config/Signing.local.xcconfig
+   ```
+
+3. `-allowProvisioningUpdates` を付けて（または Xcode から）一度ビルドすると証明書が
+   作られます。その後、最後にもう一度だけアクセシビリティを許可します。
+
+コマンドラインでのビルド中に `errSecInternalComponent` が出たら、キーチェーンが
+ロックされています。`security unlock-keychain ~/Library/Keychains/login.keychain-db`
+で解除してください。
+
+配布する場合は、Developer ID 証明書で署名し、アーカイブして公証（notarize）してください。
+
+プロジェクトは Xcode 16 の同期フォルダーを使っています。`rexTrackpad/` や
+`rexTrackpadTests/` に `.swift` ファイルを置くだけで自動的に追加されます。
+
+## 多言語対応
+
+メニューと「権限」「ジェスチャー設定」のウィンドウは、macOS の言語設定に従って
+英語（既定）または日本語で表示されます。文字列は `rexTrackpad/Localizable.xcstrings`
+（Xcode の String Catalog）にあり、ここに言語を追加すれば翻訳できます。
+Debug Monitor とログは英語のままです。
+
+## 権限
+
+| 権限 | 必要か | 理由 |
+|---|---|---|
+| アクセシビリティ | **必須** | `CGEvent` でブラウザーに合成キー入力（⌘R、⌘T など）を送るため |
+| 入力監視 | 要求しない | MultitouchSupport でのタッチ取得と、グローバル `NSEvent` モニターでのクリック検出には不要 |
+
+メニューの「**権限…**」で、現在の状態の確認、アクセシビリティの許可ダイアログの表示、
+システム設定の該当画面を開くことができます。タッチのデータが実際に届いているかも
+表示されるので、問題の切り分けに使えます。
+
+アクセシビリティが許可されていなくてもアプリは動き続けます。ジェスチャーは認識して
+ログにも残りますが、ショートカットは送りません。
+
+> **ビルドし直したとき:** アドホック署名のビルドは、ビルドのたびに署名が変わり、
+> macOS はアクセシビリティの許可をその署名に結び付けています。ビルドし直した後に
+> ジェスチャーが効かなくなったら、`tccutil reset Accessibility com.rex0220.rexTrackpad`
+> を実行し、アプリを起動し直してもう一度許可してください。
+> [Apple Development 証明書での署名](#コード署名)を一度設定すれば、この作業は不要になります。
+
+## ログイン時に起動
+
+メニューの「**ログイン時に起動**」で、アプリを `SMAppService.mainApp`（macOS 13 以降）に
+登録します。macOS が許可を求めた場合は「（システム設定で許可が必要）」と表示され、
+システム設定 › 一般 › ログイン項目 を開きます。古いログイン項目 API は使っていません。
+
+## 設定
+
+`UserDefaults` に保存されます（`defaults read com.rex0220.rexTrackpad` で確認できます）。
+
+| キー | 内容 |
+|---|---|
+| `Enabled` | 全体のオン/オフ。オフのときはトラックパッドの監視自体を止めます。 |
+| `LaunchAtLogin` | 最後に指定した状態（実際の状態は `SMAppService` から取得）。 |
+| `ChromeEnabled`、`SafariEnabled`、`EdgeEnabled`、`FirefoxEnabled` | ブラウザーごとのオン/オフ。 |
+| `GestureMappings` | JSON。例: `{"tap.3":"browser.reload","swipe.4.left":"browser.back"}` |
+| `AvoidSystemGestureConflicts` | macOS が使っているジェスチャーを無視する（初期値オン）。 |
+| `GestureConfiguration` | 認識のしきい値（「ジェスチャー設定…」でも変更可能）。 |
+
+## ブラウザーのショートカット
+
+操作はブラウザーごとに解決されます（`BrowserCommandProvider`）。ショートカットが違う
+ブラウザーを追加するときは、そのブラウザー用の provider を用意するだけです。
+
+| 操作 | Chrome / Edge | Safari | Firefox |
+|---|---|---|---|
+| 再読み込み | ⌘R | ⌘R | ⌘R |
+| 強制再読み込み | ⇧⌘R | ⌥⌘R（ページをオリジンから再読み込み） | ⇧⌘R |
+| 次のタブ | ⌃⇥ | ⌃⇥ | ⌥⌘→ |
+| 前のタブ | ⌃⇧⇥ | ⌃⇧⇥ | ⌥⌘← |
+| 新しいタブ | ⌘T | ⌘T | ⌘T |
+| タブを閉じる | ⌘W | ⌘W | ⌘W |
+| 戻る | ⌘[ | ⌘[ | ⌘[ |
+| 進む | ⌘] | ⌘] | ⌘] |
+
+Firefox で ⌥⌘→/← を使うのは、⌃⇥ が「最近使った順にタブを切り替える」設定の影響を
+受けるためです。文字キー（`R`、`T`、`W`、`[`、`]`）は、送る時点のキーボード配列に
+合わせてキーコードを求めるので、JIS 配列など US 以外のキーボードでも ⌘[ / ⌘] が効きます。
+
+タブの並びを読み取るのではなく各ブラウザーのショートカットを送るので、縦型タブ
+（Chrome・Edge・Firefox の縦型タブ、Safari のサイドバー）でもタブ切り替えが動きます。
+
+## 構成
+
+```
+MultitouchTrackpadProvider   （非公開 API、隔離）         Trackpad/
+        │  TrackpadFrame / TouchPoint
+        ▼
+GestureEngine → GestureRecognizer（状態機械、デバイスごとに 1 つ）  Gesture/
+        │  TrackpadGesture
+        ▼
+SystemGestureConflictDetector（macOS が使うジェスチャーを除外）     Gesture/
+        ▼
+ActionDispatcher: GestureMapping → GestureAction                   Actions/
+        ▼
+BrowserDetector → BrowserCommandResolver（ブラウザーごとの provider）  Browser/
+        │  KeyboardShortcut
+        ▼
+CGKeyboardEventSender（+ KeyboardLayoutResolver）                  Keyboard/
+```
+
+その他のフォルダー: `App/`（エントリーポイント、依存関係の組み立て）、`MenuBar/`
+（ステータスメニュー、権限・設定ウィンドウ）、`Permissions/`、`Login/`、`Settings/`、
+`Support/`（ログ）、`Debug/`（Debug ビルド専用のモニター）。
+
+### ジェスチャーの認識
+
+- 最初の指が触れてから最後の指が離れるまでを 1 つの *セッション* とし、1 セッションで
+  **発火するジェスチャーは最大 1 つ**です（`idle → tracking → recognized / waitingForRelease → idle`）。
+- **タップ**: 最大指数が 3 本以上、全指が 0.15 秒以内に着地、全体で 0.35 秒以内、
+  どの指も 0.05 以上動かない、物理クリックがない。
+- **スワイプ**: 平均移動量 0.12 以上（トラックパッドの高さ比）を 0.6 秒以内、主軸方向が
+  もう一方の 2 倍以上（斜めを除外）、速さ 0.4/秒以上、全指が同じ方向に動く
+  （ピンチ・回転を除外）。
+  - 全指がまとまって着地した場合（0.15 秒以内）は、各指の着地点から移動量を測り、
+    指を離した時点で「着地点 → 最後の接触位置」でもう一度判定します。指は約 30ms ずつ
+    ずれて着地するため、短く速い上下スワイプは最後の指が落ち着く前に大半が終わっています。
+  - 後から指が加わった場合（2本指スクロール中に 3 本目を置いた、など）は、その時点から
+    移動量を測ります。
+  - スワイプは認識しても**指を離した時点で発火**します。指が動いている最中にショートカットを
+    送るとトラックパッド由来のイベントと競合し、Chrome が ⌃Tab をときどき無視したためです。
+- 各ジェスチャーの後の 0.35 秒のクールダウンと、ディスパッチャー側の 0.2 秒のデバウンスで
+  二重発火を防ぎます。
+- **ショートカットは人が打つのと同じ順番で送ります**: 修飾キーを 1 つずつ押す → キーを押して
+  離す → 修飾キーを離す、を数ミリ秒間隔で送ります。Chrome の ⌃Tab のように、キーイベントの
+  フラグではなく修飾キーの実際の押下状態を見るショートカットがあるためです。
+
+しきい値は `GestureConfiguration` にあり、「ジェスチャー設定…」で調整できます。
+
+## ログとデバッグ
+
+```sh
+log stream --predicate 'subsystem == "com.rex0220.rexTrackpad"' --level debug
+```
+
+zsh では `log` が組み込みコマンドと重なるため、`/usr/bin/log` とフルパスで実行してください。
+
+記録される内容: 監視の開始/停止、ジェスチャーの開始・認識・却下、前面アプリと Bundle
+Identifier、ブラウザーの一致・無視、ブラウザー操作、送信したショートカット、権限の不足、
+デバウンス。頻度の高い詳細（`Log.verbose`）は Release ビルドから除外されます。
+
+Debug ビルドではメニューに **Debug Monitor…** が追加され、指の本数、タッチ座標、方向、
+距離、時間、認識の状態、最近のイベントを確認できます。
+
+## 既知の制約
+
+- **macOS 標準ジェスチャーとの重なり。** rexTrackpad は入力を観測するだけで止めません。
+  「macOS のジェスチャーと競合させない」をオフにすると、競合するスワイプで macOS の動作と
+  ブラウザー操作の両方が実行されます。
+- **メニューを閉じている間の設定変更**（システム設定での変更など）は、次にジェスチャーが
+  発火したとき、またはメニューを開いたときに反映されます。
+- **3本以上の指での物理クリック**はタップとして扱いません。ごく軽い「タップでクリック」の
+  3本指タップはタップとして扱います。
+- **手のひらの接触**: 接触が 5 点を超えるセッションは無視しますが、それ以上の手のひら判定は
+  まだありません。
+- **キーボードフォーカス**: ショートカットは前面のウィンドウに送られます。キー入力を横取りする
+  Web ページ（一部のエディターやゲームなど）では効かないことがあります。
+- **トラックパッドの縦横比**は、方向や距離の計算で 1.6:1 と仮定しています。
+- **スリープ復帰・抜き差し**: スリープ復帰後や Magic Trackpad の接続時には監視を自動で
+  再開しますが、1〜2 秒の空白が出ることがあります。
+- **ジェスチャー割り当ての更新**: 将来のバージョンで初期設定に追加されたジェスチャーは、
+  既存の独自の割り当てには自動で追加されません（「ジェスチャーを初期設定に戻す」を使ってください）。
+
+## 非公開 API
+
+rexTrackpad は、トラックパッドの生のタッチを読み取るために Apple の
+**非公開フレームワーク `MultitouchSupport.framework`** を使っています。システム全体で
+3本指・4本指のタップやスワイプを取得できる公開 API がないためです。
+
+- `NSEvent` / `NSGestureRecognizer` は、自分のウィンドウ内のタッチしか受け取れません。
+- `CGEventTap` はジェスチャーイベントを受け取れますが、指ごとの接触や指の本数は分からず、
+  入力監視やアクセシビリティの権限も必要です。
+
+このことによる影響:
+
+- **Mac App Store では配布できません**（非公開 API の使用と、App Sandbox を使わないため）。
+- **macOS のアップデートで動かなくなる可能性があります。** このフレームワークは非公開で、
+  Apple がいつでも変更できます。
+- 非公開 API を使うコードは `rexTrackpad/Trackpad/Private/`
+  （`MultitouchTrackpadProvider.swift` と `MultitouchSupportBridge.h`）に隔離しています。
+  フレームワークは実行時に `dlopen` で読み込むので、万一なくなってもアプリは起動し、
+  トラックパッド入力を「利用不可」と表示します。
+- それ以外のコードは `TrackpadInputProvider` プロトコルにしか依存していないため、
+  ジェスチャーや操作のコードに手を入れずに入力方式を差し替えられます。
+
+## 参考にした先行実装
+
+認識処理の設計にあたって調べたもの（コードはコピーしていません）:
+
+- [MiddleClick](https://github.com/artginzburg/MiddleClick) — GPL-3.0。ドキュメントに
+  書かれた動作だけを参考にし、コードは一切含めていません。
+- [MiddleDrag](https://github.com/NullPointerDepressiveDisorder/MiddleDrag) — MIT。
+- [OpenMultitouchSupport](https://github.com/Kyome22/OpenMultitouchSupport) — MIT。
+
+rexTrackpad のコードは独自に書いたものです。
+
+## ライセンス
+
+[MIT](LICENSE) © 2026 rex0220

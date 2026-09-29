@@ -1,5 +1,7 @@
 # rexTrackpad
 
+English | [日本語](README.ja.md)
+
 Trackpad gesture utility for macOS.
 
 rexTrackpad is a small menu bar app that turns multi-finger trackpad gestures into
@@ -22,6 +24,7 @@ clicking, scrolling and macOS gestures keep working.
 - Automatic protection against collisions with macOS system gestures
 - Launch at Login (`SMAppService`)
 - Debug Monitor (Debug builds) showing live touches, direction, distance and duration
+- English and Japanese UI (follows the macOS language)
 
 ## Supported Browsers
 
@@ -125,6 +128,9 @@ Account ("Personal Team") is enough:
 3. Build once with `-allowProvisioningUpdates` (or from Xcode) so the
    certificate is created, then grant Accessibility one last time.
 
+If a command-line build fails with `errSecInternalComponent`, the keychain is
+locked: run `security unlock-keychain ~/Library/Keychains/login.keychain-db`.
+
 To distribute, sign with a Developer ID certificate, then archive and notarize.
 
 The project uses Xcode 16 synchronized folders: new `.swift` files dropped into
@@ -195,6 +201,10 @@ Firefox uses ⌥⌘→/← because ⌃⇥ can be set to cycle tabs in recently-u
 Character keys (`R`, `T`, `W`, `[`, `]`) are resolved against the active keyboard
 layout when sent, so ⌘[ / ⌘] also work on JIS and other non-US keyboards.
 
+Because the browsers' own shortcuts are sent (rather than reading the tab strip),
+tab switching also works with vertical tabs (Chrome, Edge and Firefox vertical
+tabs, Safari's sidebar).
+
 ## Architecture
 
 ```
@@ -249,6 +259,8 @@ Thresholds live in `GestureConfiguration` and can be tuned in *Gesture Settings�
 ```sh
 log stream --predicate 'subsystem == "com.rex0220.rexTrackpad"' --level debug
 ```
+
+In zsh, `log` clashes with a shell builtin; run it as `/usr/bin/log`.
 
 Logged events include monitoring start/stop, gesture begin / recognized /
 rejected, frontmost app and bundle identifier, browser matched / ignored, browser
