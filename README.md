@@ -76,8 +76,29 @@ Taps have no system counterpart by default, so they work immediately.
 3. *Mission Control* → **Swipe Up with Four Fingers**, *App Exposé* → **Swipe Down with Four Fingers** (or off)
 
 The 3-finger swipes then become available; the 4-finger back/forward swipes stay
-off while macOS uses them. Remap any gesture from **Gestures ›** in the menu —
-Hard Reload is not bound by default but can be assigned there.
+off while macOS uses them. Remap any gesture in menu › **Settings…** › *Assignments*
+— Hard Reload is not bound by default but can be assigned there.
+
+## Menu and Settings
+
+The menu bar icon's menu:
+
+| Item | |
+|---|---|
+| **Enabled** | Master switch. When off, trackpad monitoring stops completely. |
+| **Launch at Login** | Start rexTrackpad when you log in. |
+| **Settings…** (⌘,) | Opens the settings window (below). |
+| **⚠︎ Accessibility Permission Needed…** | Shown only while Accessibility is not granted. |
+| **About rexTrackpad** / **Quit** | |
+
+The settings window has four tabs and closes with **Close**, esc or ⌘W:
+
+| Tab | Contents |
+|---|---|
+| **Assignments** | One pop-up per gesture. Gestures that macOS also uses are marked *Also used by macOS* (hover for the macOS feature); the *Avoid macOS gesture conflicts* switch and *Restore Default Gestures* are here too. |
+| **Sensitivity** | Tap, swipe and repeat-protection thresholds. |
+| **Browsers** | Turn gestures on / off per browser; browsers that are not installed are marked. |
+| **Permissions** | Accessibility / Input Monitoring status and whether touch frames arrive. |
 
 ## Requirements
 
@@ -186,7 +207,7 @@ The project uses Xcode 16 synchronized folders: new `.swift` files dropped into
 
 ## Localization
 
-The menu and the Permissions / Gesture Settings windows follow the macOS language:
+The menu and the settings window follow the macOS language:
 English (default) and Japanese. Strings live in `rexTrackpad/Localizable.xcstrings`
 (Xcode String Catalog); add a language there to translate the app. The Debug
 Monitor and log messages stay in English.
@@ -198,7 +219,7 @@ Monitor and log messages stay in English.
 | Accessibility | **Required** | Sending synthetic key presses (⌘R, ⌘T, …) to the browser with `CGEvent`. |
 | Input Monitoring | Not requested | Reading trackpad contacts via MultitouchSupport and observing mouse clicks with a global `NSEvent` monitor do not require it. |
 
-Menu › **Permissions…** shows the current status, can trigger the Accessibility
+Settings › **Permissions** shows the current status, can trigger the Accessibility
 prompt and opens the right pane of System Settings. It also shows whether touch
 frames are actually arriving, which helps diagnose problems.
 
@@ -227,7 +248,7 @@ Stored in `UserDefaults` (`defaults read com.rex0220.rexTrackpad`):
 | `ChromeEnabled`, `SafariEnabled`, `EdgeEnabled`, `FirefoxEnabled` | Per-browser switches. |
 | `GestureMappings` | JSON, e.g. `{"tap.3":"browser.reload","swipe.4.left":"browser.back"}` |
 | `AvoidSystemGestureConflicts` | Ignore gestures macOS is using (default on). |
-| `GestureConfiguration` | Recognition thresholds (also editable in *Gesture Settings…*). |
+| `GestureConfiguration` | Recognition thresholds (also editable in Settings › *Sensitivity*). |
 
 ## Browser Shortcuts
 
@@ -291,7 +312,7 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   no finger moves more than 0.05, and no physical click happened.
   - The centre of the landing points decides the side: within 35 % of the width
     from the left / right edge is a *left* / *right side* tap, anything else is a
-    plain tap (the width is adjustable in *Gesture Settings…*). A side tap without
+    plain tap (the width is adjustable in Settings › *Sensitivity*). A side tap without
     its own assignment does whatever the plain tap does.
 - **Swipe**: average travel ≥ 0.12 (trackpad heights) within 0.6 s, dominant axis
   ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s, and every finger moving the
@@ -311,7 +332,7 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   key down/up, modifiers up, with a few milliseconds between events. Some shortcuts
   (Chrome's ⌃Tab) check the live modifier state rather than the key event's flags.
 
-Thresholds live in `GestureConfiguration` and can be tuned in *Gesture Settings…*.
+Thresholds live in `GestureConfiguration` and can be tuned in Settings › *Sensitivity*.
 
 ## Logging & Debugging
 
@@ -348,7 +369,8 @@ coordinates, direction, distance, duration, recognizer state and recent events.
 - **Sleep/wake & hot-plug**: monitoring restarts automatically after wake and when
   a Magic Trackpad connects; there may be a ~1–2 s gap.
 - **Gesture mapping upgrades**: gestures added as defaults in future versions will
-  not appear automatically in an existing custom mapping (use *Restore Default Gestures*).
+  not appear automatically in an existing custom mapping (use Settings › *Assignments* ›
+  *Restore Default Gestures*).
 
 ## Private APIs
 

@@ -5,16 +5,21 @@ import SwiftUI
 final class WindowPresenter {
     private var windows: [String: NSWindow] = [:]
 
-    func show<Content: View>(id: String, title: String, @ViewBuilder content: () -> Content) {
+    /// `content` receives an action that closes the window, for a Close button.
+    func show<Content: View>(id: String, title: String, @ViewBuilder content: (_ close: @escaping () -> Void) -> Content) {
+        let close: () -> Void = { [weak self] in self?.windows[id]?.close() }
+        // Rebuild the content each time so a reopened window shows fresh state.
+        let hosting = NSHostingController(rootView: content(close))
+
         let window: NSWindow
         if let existing = windows[id] {
             window = existing
-            // Rebuild the content so a reopened window shows fresh state.
-            window.contentViewController = NSHostingController(rootView: content())
+            window.contentViewController = hosting
         } else {
-            window = NSWindow(contentViewController: NSHostingController(rootView: content()))
+            window = NSWindow(contentViewController: hosting)
             window.title = title
-            window.styleMask = [.titled, .closable, .miniaturizable]
+            // Settings-style window: closable, but no minimise / zoom buttons.
+            window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()
             windows[id] = window

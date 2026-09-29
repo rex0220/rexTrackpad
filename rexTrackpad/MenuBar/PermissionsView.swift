@@ -96,8 +96,7 @@ struct PermissionsView: View {
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(20)
-        .frame(width: 460)
+        .padding(8)
         .onAppear { model.startPolling() }
         .onDisappear { model.stopPolling() }
     }

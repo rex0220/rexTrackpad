@@ -45,98 +45,25 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(header)
         menu.addItem(.separator())
 
+        // On/off switches first.
         menu.addItem(makeItem(String(localized: "Enabled"), action: #selector(toggleEnabled), checked: settings.isEnabled))
-        menu.addItem(.separator())
-
-        let gestures = NSMenuItem(title: String(localized: "Gestures"), action: nil, keyEquivalent: "")
-        gestures.submenu = makeGesturesMenu()
-        menu.addItem(gestures)
-
-        let browsers = NSMenuItem(title: String(localized: "Supported Browsers"), action: nil, keyEquivalent: "")
-        browsers.submenu = makeBrowsersMenu()
-        menu.addItem(browsers)
-
         menu.addItem(makeLaunchAtLoginItem())
         menu.addItem(.separator())
 
-        let permissionsTitle = controller.permissions.accessibilityStatus == .granted
-            ? String(localized: "Permissions…")
-            : "⚠︎ " + String(localized: "Permissions…")
-        menu.addItem(makeItem(permissionsTitle, action: #selector(showPermissionsAction)))
-        menu.addItem(makeItem(String(localized: "Gesture Settings…"), action: #selector(showSettings)))
+        // Gestures, sensitivity, browsers and permissions all live in the settings window.
+        menu.addItem(makeItem(String(localized: "Settings…"), action: #selector(showSettingsAction), keyEquivalent: ","))
+        if controller.permissions.accessibilityStatus != .granted {
+            menu.addItem(makeItem("⚠︎ " + String(localized: "Accessibility Permission Needed…"), action: #selector(showPermissionsAction)))
+        }
+        menu.addItem(.separator())
+
         #if DEBUG
         menu.addItem(makeItem("Debug Monitor…", action: #selector(showDebugMonitor)))
-        #endif
         menu.addItem(.separator())
+        #endif
 
         menu.addItem(makeItem(String(localized: "About rexTrackpad"), action: #selector(showAbout)))
         menu.addItem(makeItem(String(localized: "Quit"), action: #selector(quit), keyEquivalent: "q"))
-    }
-
-    private func makeGesturesMenu() -> NSMenu {
-        let submenu = NSMenu()
-        submenu.autoenablesItems = false
-        let mapping = settings.gestureMapping
-        let avoidConflicts = settings.avoidsSystemGestureConflicts
-
-        for gesture in TrackpadGesture.configurable {
-            let bound = mapping.ownAction(for: gesture)
-            let conflict = controller.activeConflict(for: gesture)
-            // A zone tap without its own action does whatever the plain tap does.
-            let unboundTitle = gesture.fallback.map { String(localized: "Same as \($0.displayName)") }
-                ?? String(localized: "None")
-
-            var title = "\(bound?.displayName ?? unboundTitle)  —  \(gesture.displayName)"
-            if conflict != nil {
-                title += avoidConflicts ? "  " + String(localized: "(off: macOS gesture)") : "  ⚠︎"
-            }
-            let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-            let actions = NSMenu()
-            actions.autoenablesItems = false
-
-            if let conflict {
-                let info = NSMenuItem(title: String(localized: "Used by macOS: \(conflict.feature.displayName)"), action: nil, keyEquivalent: "")
-                info.isEnabled = false
-                actions.addItem(info)
-                let hint = NSMenuItem(
-                    title: avoidConflicts
-                        ? String(localized: "Ignored while “Avoid macOS Gesture Conflicts” is on")
-                        : String(localized: "Both the macOS gesture and this action will run"),
-                    action: nil,
-                    keyEquivalent: ""
-                )
-                hint.isEnabled = false
-                actions.addItem(hint)
-                actions.addItem(.separator())
-            }
-
-            actions.addItem(makeBindingItem(title: unboundTitle, gesture: gesture, action: nil, checked: bound == nil))
-            for action in GestureAction.allBuiltIn {
-                actions.addItem(makeBindingItem(title: action.displayName, gesture: gesture, action: action, checked: bound == action))
-            }
-            item.submenu = actions
-            submenu.addItem(item)
-        }
-
-        submenu.addItem(.separator())
-        submenu.addItem(makeItem(String(localized: "Avoid macOS Gesture Conflicts"), action: #selector(toggleAvoidConflicts), checked: avoidConflicts))
-        submenu.addItem(makeItem(String(localized: "Restore Default Gestures"), action: #selector(restoreDefaultGestures)))
-        return submenu
-    }
-
-    private func makeBrowsersMenu() -> NSMenu {
-        let submenu = NSMenu()
-        submenu.autoenablesItems = false
-        for browser in Browser.allCases {
-            var title = browser.displayName
-            if !controller.browserDetector.isInstalled(browser) {
-                title = String(localized: "\(browser.displayName) (not installed)")
-            }
-            let item = makeItem(title, action: #selector(toggleBrowser(_:)), checked: settings.isBrowserEnabled(browser))
-            item.representedObject = browser.rawValue
-            submenu.addItem(item)
-        }
-        return submenu
     }
 
     private func makeLaunchAtLoginItem() -> NSMenuItem {
@@ -163,36 +90,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         return item
     }
 
-    private func makeBindingItem(title: String, gesture: TrackpadGesture, action: GestureAction?, checked: Bool) -> NSMenuItem {
-        let item = makeItem(title, action: #selector(selectBinding(_:)), checked: checked)
-        item.representedObject = BindingChoice(gesture: gesture, action: action)
-        return item
-    }
-
     // MARK: - Actions
 
     @objc private func toggleEnabled() {
         settings.isEnabled.toggle()
-    }
-
-    @objc private func selectBinding(_ sender: NSMenuItem) {
-        guard let choice = sender.representedObject as? BindingChoice else { return }
-        var mapping = settings.gestureMapping
-        mapping.bind(choice.gesture, to: choice.action)
-        settings.gestureMapping = mapping
-    }
-
-    @objc private func toggleAvoidConflicts() {
-        settings.avoidsSystemGestureConflicts.toggle()
-    }
-
-    @objc private func restoreDefaultGestures() {
-        settings.resetGestureMapping()
-    }
-
-    @objc private func toggleBrowser(_ sender: NSMenuItem) {
-        guard let raw = sender.representedObject as? String, let browser = Browser(rawValue: raw) else { return }
-        settings.setBrowser(browser, enabled: !settings.isBrowserEnabled(browser))
     }
 
     @objc private func toggleLaunchAtLogin() {
@@ -222,28 +123,38 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         }
     }
 
+    @objc private func showSettingsAction() {
+        showSettings(tab: .assignments)
+    }
+
     @objc private func showPermissionsAction() {
-        showPermissions()
+        showSettings(tab: .permissions)
     }
 
+    /// Also used on first launch to explain the Accessibility permission.
     func showPermissions() {
-        let model = PermissionsViewModel(permissions: controller.permissions, trackpad: controller.trackpad)
-        windows.show(id: "permissions", title: String(localized: "rexTrackpad Permissions")) {
-            PermissionsView(model: model)
-        }
+        showSettings(tab: .permissions)
     }
 
-    @objc private func showSettings() {
-        let settings = controller.settings
-        windows.show(id: "settings", title: String(localized: "rexTrackpad Gesture Settings")) {
-            SettingsView(settings: settings)
+    func showSettings(tab: SettingsView.Tab) {
+        let controller = self.controller
+        let permissions = PermissionsViewModel(permissions: controller.permissions, trackpad: controller.trackpad)
+        windows.show(id: "settings", title: String(localized: "rexTrackpad Settings")) { close in
+            SettingsView(
+                settings: controller.settings,
+                conflict: { controller.activeConflict(for: $0) },
+                isInstalled: { controller.browserDetector.isInstalled($0) },
+                permissions: permissions,
+                close: close,
+                initialTab: tab
+            )
         }
     }
 
     #if DEBUG
     @objc private func showDebugMonitor() {
         let monitor = controller.debugMonitor
-        windows.show(id: "debug", title: "rexTrackpad Debug Monitor") {
+        windows.show(id: "debug", title: "rexTrackpad Debug Monitor") { _ in
             DebugMonitorView(monitor: monitor)
         }
     }
@@ -290,16 +201,5 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         } else {
             NSApp.activate(ignoringOtherApps: true)
         }
-    }
-}
-
-/// Payload of a gesture → action menu item.
-private final class BindingChoice: NSObject {
-    let gesture: TrackpadGesture
-    let action: GestureAction?
-
-    init(gesture: TrackpadGesture, action: GestureAction?) {
-        self.gesture = gesture
-        self.action = action
     }
 }

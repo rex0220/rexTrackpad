@@ -1,16 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "%@ (not installed)": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@（未インストール）"
-          }
-        }
-      }
-    },
     "%@ · %llu frames received": {
       "localizations": {
         "ja": {
@@ -54,12 +44,12 @@
         }
       }
     },
-    "(off: macOS gesture)": {
+    "(not installed)": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "（macOS が使用中のため無効）"
+            "value": "（未インストール）"
           }
         }
       }
@@ -84,12 +74,32 @@
         }
       }
     },
+    "Accessibility Permission Needed…": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アクセシビリティの許可が必要…"
+          }
+        }
+      }
+    },
     "After rebuilding the app, macOS may treat it as a new app. If gestures stop working, remove rexTrackpad from the Accessibility list and add it again.": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
             "value": "アプリをビルドし直すと、macOS が別のアプリとして扱うことがあります。ジェスチャーが効かなくなったら、アクセシビリティの一覧から rexTrackpad を削除して追加し直してください。"
+          }
+        }
+      }
+    },
+    "Also used by macOS": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS と重複"
           }
         }
       }
@@ -104,12 +114,12 @@
         }
       }
     },
-    "Avoid macOS Gesture Conflicts": {
+    "Assignments": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "macOS のジェスチャーと競合させない"
+            "value": "割り当て"
           }
         }
       }
@@ -134,18 +144,28 @@
         }
       }
     },
-    "Both the macOS gesture and this action will run": {
+    "Browsers": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "macOS のジェスチャーとこの操作の両方が実行されます"
+            "value": "ブラウザー"
           }
         }
       }
     },
     "Clear": {
       "shouldTranslate": false
+    },
+    "Close": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉じる"
+          }
+        }
+      }
     },
     "Close Tab": {
       "localizations": {
@@ -220,22 +240,22 @@
         }
       }
     },
-    "Gesture Settings…": {
+    "Gestures marked “Also used by macOS” are ignored, because macOS would react to them too. Change the macOS gesture in System Settings › Trackpad › More Gestures to use them.": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ジェスチャー設定…"
+            "value": "「macOS と重複」のジェスチャーは、macOS の機能も同時に反応してしまうため無視しています。使うには、システム設定 › トラックパッド › その他のジェスチャ で macOS 側の設定を変えてください。"
           }
         }
       }
     },
-    "Gestures": {
+    "Gestures only work while a checked browser is the frontmost app.": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ジェスチャー"
+            "value": "チェックしたブラウザーが前面にあるときだけ、ジェスチャーが動作します。"
           }
         }
       }
@@ -256,26 +276,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "強制再読み込み"
-          }
-        }
-      }
-    },
-    "Ignored while “Avoid macOS Gesture Conflicts” is on": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "「macOS のジェスチャーと競合させない」がオンのため無視されます"
-          }
-        }
-      }
-    },
-    "Ignores gestures that macOS already uses (Mission Control, switching desktops, …) according to System Settings › Trackpad.": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "システム設定 › トラックパッド の設定を見て、macOS が使っているジェスチャー（Mission Control、デスクトップの切り替えなど）を無視します。"
           }
         }
       }
@@ -490,12 +490,12 @@
         }
       }
     },
-    "Permissions…": {
+    "Permissions": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "権限…"
+            "value": "権限"
           }
         }
       }
@@ -580,12 +580,12 @@
         }
       }
     },
-    "Restore Defaults": {
+    "Restore Default Sensitivity": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "初期設定に戻す"
+            "value": "感度を初期設定に戻す"
           }
         }
       }
@@ -610,22 +610,12 @@
         }
       }
     },
-    "rexTrackpad Gesture Settings": {
+    "rexTrackpad Settings": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "rexTrackpad のジェスチャー設定"
-          }
-        }
-      }
-    },
-    "rexTrackpad Permissions": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "rexTrackpad の権限"
+            "value": "rexTrackpad の設定"
           }
         }
       }
@@ -660,6 +650,26 @@
         }
       }
     },
+    "Sensitivity": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "感度"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定…"
+          }
+        }
+      }
+    },
     "Side zone width": {
       "localizations": {
         "ja": {
@@ -686,16 +696,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "停止中（rexTrackpad が無効）"
-          }
-        }
-      }
-    },
-    "Supported Browsers": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "対応ブラウザー"
           }
         }
       }
