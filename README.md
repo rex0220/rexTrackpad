@@ -26,7 +26,7 @@ clicking, scrolling and macOS gestures keep working.
   counter-clockwise
 - Reopen the last closed tab
 - Per-browser enable / disable
-- Rebind any gesture to any action from the menu
+- Assign any action to any gesture in one settings window
 - Automatic protection against collisions with macOS system gestures
 - Launch at Login (`SMAppService`)
 - Debug Monitor (Debug builds) showing live touches, direction, distance and duration
