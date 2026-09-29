@@ -62,8 +62,8 @@ struct PermissionsView: View {
         VStack(alignment: .leading, spacing: 16) {
             PermissionRow(
                 title: "Accessibility",
-                status: model.accessibility == .granted ? PermissionBadge.ok("Granted") : .problem("Required"),
-                detail: "Needed to send keyboard shortcuts (⌘R, ⌘T, …) to the browser."
+                status: model.accessibility == .granted ? PermissionBadge.ok(String(localized: "Granted")) : .problem(String(localized: "Required")),
+                detail: String(localized: "Needed to send keyboard shortcuts (⌘R, ⌘T, …) to the browser.")
             ) {
                 if model.accessibility != .granted {
                     Button("Request Access…") { model.requestAccessibility() }
@@ -75,8 +75,8 @@ struct PermissionsView: View {
 
             PermissionRow(
                 title: "Input Monitoring",
-                status: model.inputMonitoring == .granted ? PermissionBadge.ok("Granted") : .neutral("Not required"),
-                detail: "rexTrackpad does not request this. Grant it only if Trackpad Input below stays at 0 frames while you touch the trackpad."
+                status: model.inputMonitoring == .granted ? PermissionBadge.ok(String(localized: "Granted")) : .neutral(String(localized: "Not required")),
+                detail: String(localized: "rexTrackpad does not request this. Grant it only if Trackpad Input below stays at 0 frames while you touch the trackpad.")
             ) {
                 Button("Open System Settings") { model.openInputMonitoringSettings() }
             }
@@ -86,7 +86,7 @@ struct PermissionsView: View {
             PermissionRow(
                 title: "Trackpad Input",
                 status: trackpadStatus,
-                detail: "\(model.trackpadState.displayText) · \(model.framesReceived) frames received"
+                detail: String(localized: "\(model.trackpadState.displayText) · \(model.framesReceived) frames received")
             ) {
                 EmptyView()
             }
@@ -105,11 +105,11 @@ struct PermissionsView: View {
     private var trackpadStatus: PermissionBadge {
         switch model.trackpadState {
         case .running:
-            return model.framesReceived > 0 ? .ok("Receiving touches") : .neutral("Waiting for touches")
+            return model.framesReceived > 0 ? .ok(String(localized: "Receiving touches")) : .neutral(String(localized: "Waiting for touches"))
         case .stopped:
-            return .neutral("Stopped (rexTrackpad is disabled)")
+            return .neutral(String(localized: "Stopped (rexTrackpad is disabled)"))
         case .unavailable:
-            return .problem("Unavailable")
+            return .problem(String(localized: "Unavailable"))
         }
     }
 }
@@ -121,7 +121,7 @@ private enum PermissionBadge {
 }
 
 private struct PermissionRow<Buttons: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let status: PermissionBadge
     let detail: String
     @ViewBuilder let buttons: () -> Buttons

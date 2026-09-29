@@ -113,11 +113,11 @@ final class MultitouchTrackpadProvider: TrackpadInputProvider {
         guard !state.isRunning else { return }
 
         guard let framework else {
-            state = .unavailable(reason: "MultitouchSupport.framework could not be loaded")
+            state = .unavailable(reason: String(localized: "MultitouchSupport.framework could not be loaded"))
             return
         }
         guard let rawList = framework.createDeviceList() else {
-            state = .unavailable(reason: "No multitouch devices found")
+            state = .unavailable(reason: String(localized: "No multitouch devices found"))
             return
         }
 
@@ -141,7 +141,7 @@ final class MultitouchTrackpadProvider: TrackpadInputProvider {
         installObservers()
 
         if started.isEmpty {
-            state = .unavailable(reason: "No multitouch devices found")
+            state = .unavailable(reason: String(localized: "No multitouch devices found"))
             Log.trackpad.notice("trackpad monitoring started, but no devices were found")
         } else {
             state = .running(deviceCount: started.count)

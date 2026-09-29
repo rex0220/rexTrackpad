@@ -14,11 +14,11 @@ enum TrackpadInputState: Equatable, Sendable {
     var displayText: String {
         switch self {
         case .stopped:
-            return "Stopped"
+            return String(localized: "Stopped")
         case .running(let count):
-            return count == 1 ? "Monitoring 1 device" : "Monitoring \(count) devices"
+            return count == 1 ? String(localized: "Monitoring 1 device") : String(localized: "Monitoring \(count) devices")
         case .unavailable(let reason):
-            return "Unavailable: \(reason)"
+            return String(localized: "Unavailable: \(reason)")
         }
     }
 }

@@ -18,14 +18,14 @@ enum BrowserAction: String, Codable, CaseIterable, Sendable {
 
     var displayName: String {
         switch self {
-        case .reload: return "Reload"
-        case .hardReload: return "Hard Reload"
-        case .previousTab: return "Previous Tab"
-        case .nextTab: return "Next Tab"
-        case .newTab: return "New Tab"
-        case .closeTab: return "Close Tab"
-        case .back: return "Back"
-        case .forward: return "Forward"
+        case .reload: return String(localized: "Reload")
+        case .hardReload: return String(localized: "Hard Reload")
+        case .previousTab: return String(localized: "Previous Tab")
+        case .nextTab: return String(localized: "Next Tab")
+        case .newTab: return String(localized: "New Tab")
+        case .closeTab: return String(localized: "Close Tab")
+        case .back: return String(localized: "Back")
+        case .forward: return String(localized: "Forward")
         }
     }
 }

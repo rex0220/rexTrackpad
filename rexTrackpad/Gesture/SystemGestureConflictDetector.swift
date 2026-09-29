@@ -1,11 +1,30 @@
 import CoreFoundation
 import Foundation
 
+/// A macOS trackpad feature that can claim the same motion as a rexTrackpad gesture.
+enum SystemGestureFeature: String, Sendable {
+    case lookUp
+    case threeFingerDrag
+    case swipeBetweenPagesOrApps
+    case missionControl
+    case appExpose
+
+    /// Localised name shown in the menu.
+    var displayName: String {
+        switch self {
+        case .lookUp: return String(localized: "Look Up & Data Detectors (tap with three fingers)")
+        case .threeFingerDrag: return String(localized: "Three-finger drag")
+        case .swipeBetweenPagesOrApps: return String(localized: "Swipe between pages / full-screen apps")
+        case .missionControl: return String(localized: "Mission Control")
+        case .appExpose: return String(localized: "App Exposé")
+        }
+    }
+}
+
 /// A macOS system gesture that uses the same physical motion as a rexTrackpad gesture.
 struct SystemGestureConflict: Equatable, Sendable {
     let gesture: TrackpadGesture
-    /// Human-readable name of the macOS feature, e.g. "Mission Control".
-    let systemFeature: String
+    let feature: SystemGestureFeature
 }
 
 /// Reads another application's preferences (abstracted for tests).
@@ -47,7 +66,7 @@ final class SystemGestureConflictDetector {
     }
 
     func conflict(for gesture: TrackpadGesture) -> SystemGestureConflict? {
-        systemFeature(for: gesture).map { SystemGestureConflict(gesture: gesture, systemFeature: $0) }
+        systemFeature(for: gesture).map { SystemGestureConflict(gesture: gesture, feature: $0) }
     }
 
     func conflicts(for gestures: [TrackpadGesture]) -> [TrackpadGesture: SystemGestureConflict] {
@@ -62,18 +81,18 @@ final class SystemGestureConflictDetector {
 
     // MARK: - Rules
 
-    private func systemFeature(for gesture: TrackpadGesture) -> String? {
+    private func systemFeature(for gesture: TrackpadGesture) -> SystemGestureFeature? {
         switch gesture {
         case .tap(let fingers):
             // "Look up & data detectors → Tap with three fingers" (default is Force Click = 0).
             if fingers == 3, trackpadSetting("TrackpadThreeFingerTapGesture", defaultValue: 0) != 0 {
-                return "Look Up & Data Detectors (tap with three fingers)"
+                return .lookUp
             }
             return nil
 
         case .swipe(let fingers, let direction):
             if fingers == 3, trackpadSetting("TrackpadThreeFingerDrag", defaultValue: 0) != 0 {
-                return "Three-finger drag"
+                return .threeFingerDrag
             }
             guard fingers == 3 || fingers == 4 else { return nil }
             let prefix = fingers == 3 ? "TrackpadThreeFinger" : "TrackpadFourFinger"
@@ -81,17 +100,17 @@ final class SystemGestureConflictDetector {
             switch direction {
             case .left, .right:
                 if trackpadSetting("\(prefix)HorizSwipeGesture", defaultValue: 2) != 0 {
-                    return "Swipe between pages / full-screen apps"
+                    return .swipeBetweenPagesOrApps
                 }
             case .up:
                 if trackpadSetting("\(prefix)VertSwipeGesture", defaultValue: 2) != 0,
                    dockSetting("showMissionControlGestureEnabled") != false {
-                    return "Mission Control"
+                    return .missionControl
                 }
             case .down:
                 if trackpadSetting("\(prefix)VertSwipeGesture", defaultValue: 2) != 0,
                    dockSetting("showAppExposeGestureEnabled") != false {
-                    return "App Exposé"
+                    return .appExpose
                 }
             }
             return nil

@@ -9,10 +9,10 @@ enum SwipeDirection: String, Codable, CaseIterable, Sendable {
 
     var displayName: String {
         switch self {
-        case .left: return "Left"
-        case .right: return "Right"
-        case .up: return "Up"
-        case .down: return "Down"
+        case .left: return String(localized: "Left")
+        case .right: return String(localized: "Right")
+        case .up: return String(localized: "Up")
+        case .down: return String(localized: "Down")
         }
     }
 
@@ -97,9 +97,9 @@ enum TrackpadGesture: Hashable, Sendable {
     var displayName: String {
         switch self {
         case .tap(let fingers):
-            return "\(fingers)-Finger Tap"
+            return String(localized: "\(fingers)-Finger Tap")
         case .swipe(let fingers, let direction):
-            return "\(fingers)-Finger Swipe \(direction.displayName)"
+            return String(localized: "\(fingers)-Finger Swipe \(direction.displayName)")
         }
     }
 }

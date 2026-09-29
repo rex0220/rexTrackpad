@@ -55,7 +55,7 @@ final class ConflictDetectorTests: XCTestCase {
         let detector = SystemGestureConflictDetector(reader: prefs)
         XCTAssertNil(detector.conflict(for: .threeFingerSwipeLeft))
         XCTAssertNil(detector.conflict(for: .threeFingerSwipeDown))
-        XCTAssertEqual(detector.conflict(for: .fourFingerSwipeLeft)?.systemFeature, "Swipe between pages / full-screen apps")
+        XCTAssertEqual(detector.conflict(for: .fourFingerSwipeLeft)?.feature, .swipeBetweenPagesOrApps)
     }
 
     func testThreeFingerTapLookUpAndThreeFingerDrag() {
@@ -66,7 +66,7 @@ final class ConflictDetectorTests: XCTestCase {
         ]])
         let detector = SystemGestureConflictDetector(reader: prefs)
         XCTAssertNotNil(detector.conflict(for: .threeFingerTap))
-        XCTAssertEqual(detector.conflict(for: .threeFingerSwipeRight)?.systemFeature, "Three-finger drag")
+        XCTAssertEqual(detector.conflict(for: .threeFingerSwipeRight)?.feature, .threeFingerDrag)
     }
 
     func testDisabledMissionControlInDockFreesSwipeUp() {

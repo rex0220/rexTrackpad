@@ -130,6 +130,13 @@ To distribute, sign with a Developer ID certificate, then archive and notarize.
 The project uses Xcode 16 synchronized folders: new `.swift` files dropped into
 `rexTrackpad/` or `rexTrackpadTests/` are picked up automatically.
 
+## Localization
+
+The menu and the Permissions / Gesture Settings windows follow the macOS language:
+English (default) and Japanese. Strings live in `rexTrackpad/Localizable.xcstrings`
+(Xcode String Catalog); add a language there to translate the app. The Debug
+Monitor and log messages stay in English.
+
 ## Permissions
 
 | Permission | Needed? | Why |

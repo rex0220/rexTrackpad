@@ -53,7 +53,7 @@ struct SettingsView: View {
         )
     }
 
-    private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
+    private func slider(_ title: LocalizedStringKey, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
         HStack {
             Text(title).frame(width: 170, alignment: .leading)
             Slider(value: value, in: range)

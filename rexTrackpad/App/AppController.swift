@@ -44,7 +44,7 @@ final class AppController {
 
     func start() {
         trackpad.onStateChange = { [weak self] state in
-            Log.trackpad.info("trackpad state: \(state.displayText, privacy: .public)")
+            Log.trackpad.info("trackpad state: \(String(describing: state), privacy: .public)")
             self?.onTrackpadStateChange?(state)
         }
         engine.onGesture = { [weak self] gesture in
@@ -100,9 +100,9 @@ final class AppController {
 
     private func handle(_ gesture: TrackpadGesture) {
         if settings.avoidsSystemGestureConflicts, let conflict = conflictDetector.conflict(for: gesture) {
-            Log.gesture.info("gesture rejected: \(gesture.identifier, privacy: .public) conflicts with macOS \(conflict.systemFeature, privacy: .public)")
+            Log.gesture.info("gesture rejected: \(gesture.identifier, privacy: .public) conflicts with macOS \(conflict.feature.rawValue, privacy: .public)")
             #if DEBUG
-            debugMonitor.note("ignored \(gesture.displayName): conflicts with \(conflict.systemFeature)")
+            debugMonitor.note("ignored \(gesture.identifier): conflicts with \(conflict.feature.rawValue)")
             #endif
             return
         }
