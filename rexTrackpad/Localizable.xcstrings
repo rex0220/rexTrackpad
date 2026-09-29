@@ -44,6 +44,16 @@
         }
       }
     },
+    "%lld-Finger Tap (%@)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld本指タップ（%2$@）"
+          }
+        }
+      }
+    },
     "(off: macOS gesture)": {
       "localizations": {
         "ja": {
@@ -306,6 +316,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "左"
+          }
+        }
+      }
+    },
+    "Left side": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左側"
           }
         }
       }
@@ -616,6 +636,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "右"
+          }
+        }
+      }
+    },
+    "Right side": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右側"
+          }
+        }
+      }
+    },
+    "Same as %@": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@と同じ"
+          }
+        }
+      }
+    },
+    "Side zone width": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左右の区域の幅"
           }
         }
       }

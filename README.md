@@ -20,6 +20,8 @@ clicking, scrolling and macOS gestures keep working.
 - New tab
 - Close tab
 - Open the link under the pointer in a new tab
+- Position-aware taps: a 3-finger tap on the left / right side of the trackpad
+  can do something different from a tap in the middle
 - Per-browser enable / disable
 - Rebind any gesture to any action from the menu
 - Automatic protection against collisions with macOS system gestures
@@ -42,7 +44,9 @@ When any other app is frontmost, gestures do nothing.
 
 | Gesture | Action | Works out of the box? |
 |---|---|---|
-| 3-finger tap | Reload | ✅ Yes (unless "Look up: Tap with three fingers" is on) |
+| 3-finger tap (middle) | Reload | ✅ Yes (unless "Look up: Tap with three fingers" is on) |
+| 3-finger tap (left side) | Back | ✅ Yes (same condition) |
+| 3-finger tap (right side) | Forward | ✅ Yes (same condition) |
 | 4-finger tap | Open Link in New Tab (link under the pointer) | ✅ Yes |
 | 3-finger swipe left | Previous Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
 | 3-finger swipe right | Next Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
@@ -285,6 +289,10 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   most one gesture** (`idle → tracking → recognized / waitingForRelease → idle`).
 - **Tap**: max finger count ≥ 3, all fingers land within 0.15 s, whole tap ≤ 0.35 s,
   no finger moves more than 0.05, and no physical click happened.
+  - The centre of the landing points decides the side: within 35 % of the width
+    from the left / right edge is a *left* / *right side* tap, anything else is a
+    plain tap (the width is adjustable in *Gesture Settings…*). A side tap without
+    its own assignment does whatever the plain tap does.
 - **Swipe**: average travel ≥ 0.12 (trackpad heights) within 0.6 s, dominant axis
   ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s, and every finger moving the
   same way (rejects pinch/rotate).

@@ -80,6 +80,7 @@ final class ConflictDetectorTests: XCTestCase {
         ]])
         let detector = SystemGestureConflictDetector(reader: prefs)
         XCTAssertNotNil(detector.conflict(for: .threeFingerTap))
+        XCTAssertNotNil(detector.conflict(for: .threeFingerTapLeft))
         XCTAssertEqual(detector.conflict(for: .threeFingerSwipeRight)?.feature, .threeFingerDrag)
     }
 

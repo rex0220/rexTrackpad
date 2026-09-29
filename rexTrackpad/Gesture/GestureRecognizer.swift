@@ -377,8 +377,23 @@ final class GestureRecognizer {
         } else if landingSpread() > configuration.tapMaximumLandingSpread {
             reject(.fingersLandedApart, metrics: candidate)
         } else {
-            recognize(.tap(fingers: fingers), metrics: candidate, at: time)
+            recognize(tapGesture(fingers: fingers), metrics: candidate, at: time)
         }
+    }
+
+    /// A tap on the left / right side of the trackpad becomes a zone tap, judged by
+    /// the centre of the landing points.
+    private func tapGesture(fingers: Int) -> TrackpadGesture {
+        let xs = session.origins.values.map { Double($0.x) }
+        guard !xs.isEmpty else { return .tap(fingers: fingers) }
+        let centre = xs.reduce(0, +) / Double(xs.count)
+        if centre < configuration.tapZoneEdge {
+            return .zoneTap(fingers: fingers, zone: .left)
+        }
+        if centre > 1 - configuration.tapZoneEdge {
+            return .zoneTap(fingers: fingers, zone: .right)
+        }
+        return .tap(fingers: fingers)
     }
 
     // MARK: - Outcomes

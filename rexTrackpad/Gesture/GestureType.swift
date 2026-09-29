@@ -27,6 +27,19 @@ enum SwipeDirection: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// Side of the trackpad a tap landed on, judged by the centre of the fingers.
+enum TapZone: String, Codable, CaseIterable, Sendable {
+    case left
+    case right
+
+    var displayName: String {
+        switch self {
+        case .left: return String(localized: "Left side")
+        case .right: return String(localized: "Right side")
+        }
+    }
+}
+
 /// A physical gesture performed on the trackpad.
 ///
 /// Gestures say nothing about *what* happens; that is `GestureAction`, and the
@@ -38,9 +51,14 @@ enum SwipeDirection: String, Codable, CaseIterable, Sendable {
 /// `.rotate(direction:)`, `.cornerTap(corner:)`, `.chord(...)`.
 enum TrackpadGesture: Hashable, Sendable {
     case tap(fingers: Int)
+    /// A tap on the left or right side of the trackpad. Taps in the middle are plain
+    /// `.tap`, and a zone tap without its own binding behaves like `.tap` (`fallback`).
+    case zoneTap(fingers: Int, zone: TapZone)
     case swipe(fingers: Int, direction: SwipeDirection)
 
     static let threeFingerTap = TrackpadGesture.tap(fingers: 3)
+    static let threeFingerTapLeft = TrackpadGesture.zoneTap(fingers: 3, zone: .left)
+    static let threeFingerTapRight = TrackpadGesture.zoneTap(fingers: 3, zone: .right)
     static let fourFingerTap = TrackpadGesture.tap(fingers: 4)
 
     static let threeFingerSwipeLeft = TrackpadGesture.swipe(fingers: 3, direction: .left)
@@ -54,6 +72,8 @@ enum TrackpadGesture: Hashable, Sendable {
     /// Gestures offered in the menu, in display order.
     static let configurable: [TrackpadGesture] = [
         .threeFingerTap,
+        .threeFingerTapLeft,
+        .threeFingerTapRight,
         .fourFingerTap,
         .threeFingerSwipeLeft,
         .threeFingerSwipeRight,
@@ -65,16 +85,26 @@ enum TrackpadGesture: Hashable, Sendable {
 
     var fingerCount: Int {
         switch self {
-        case .tap(let fingers), .swipe(let fingers, _):
+        case .tap(let fingers), .zoneTap(let fingers, _), .swipe(let fingers, _):
             return fingers
         }
     }
 
-    /// Stable string used for persistence, e.g. `tap.3`, `swipe.4.left`.
+    /// The gesture whose binding applies when this one has none of its own.
+    var fallback: TrackpadGesture? {
+        if case .zoneTap(let fingers, _) = self {
+            return .tap(fingers: fingers)
+        }
+        return nil
+    }
+
+    /// Stable string used for persistence, e.g. `tap.3`, `tap.3.left`, `swipe.4.left`.
     var identifier: String {
         switch self {
         case .tap(let fingers):
             return "tap.\(fingers)"
+        case .zoneTap(let fingers, let zone):
+            return "tap.\(fingers).\(zone.rawValue)"
         case .swipe(let fingers, let direction):
             return "swipe.\(fingers).\(direction.rawValue)"
         }
@@ -86,6 +116,9 @@ enum TrackpadGesture: Hashable, Sendable {
         switch (parts[0], parts.count) {
         case ("tap", 2):
             self = .tap(fingers: fingers)
+        case ("tap", 3):
+            guard let zone = TapZone(rawValue: parts[2]) else { return nil }
+            self = .zoneTap(fingers: fingers, zone: zone)
         case ("swipe", 3):
             guard let direction = SwipeDirection(rawValue: parts[2]) else { return nil }
             self = .swipe(fingers: fingers, direction: direction)
@@ -98,6 +131,8 @@ enum TrackpadGesture: Hashable, Sendable {
         switch self {
         case .tap(let fingers):
             return String(localized: "\(fingers)-Finger Tap")
+        case .zoneTap(let fingers, let zone):
+            return String(localized: "\(fingers)-Finger Tap (\(zone.displayName))")
         case .swipe(let fingers, let direction):
             return String(localized: "\(fingers)-Finger Swipe \(direction.displayName)")
         }

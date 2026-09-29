@@ -25,6 +25,9 @@ struct GestureConfiguration: Equatable, Sendable {
     var tapMaximumMovement: Double = 0.05
     /// All fingers must land within this time of each other.
     var tapMaximumLandingSpread: TimeInterval = 0.15
+    /// Taps whose finger centre is within this fraction of the width from the left /
+    /// right edge are zone taps (left / right side).
+    var tapZoneEdge: Double = 0.35
 
     // MARK: Swipe
 
@@ -61,7 +64,7 @@ struct GestureConfiguration: Equatable, Sendable {
 extension GestureConfiguration: Codable {
     private enum CodingKeys: String, CodingKey {
         case minimumFingers, maximumFingers
-        case tapMaximumDuration, tapMaximumMovement, tapMaximumLandingSpread
+        case tapMaximumDuration, tapMaximumMovement, tapMaximumLandingSpread, tapZoneEdge
         case settleTime, swipeMinimumDistance, swipeMaximumDuration, swipeMinimumVelocity
         case swipeDirectionRatio, swipeFingerAgreement
         case cooldown, staleSessionTimeout
@@ -83,6 +86,7 @@ extension GestureConfiguration: Codable {
         try decode(\.tapMaximumDuration, .tapMaximumDuration)
         try decode(\.tapMaximumMovement, .tapMaximumMovement)
         try decode(\.tapMaximumLandingSpread, .tapMaximumLandingSpread)
+        try decode(\.tapZoneEdge, .tapZoneEdge)
         try decode(\.settleTime, .settleTime)
         try decode(\.swipeMinimumDistance, .swipeMinimumDistance)
         try decode(\.swipeMaximumDuration, .swipeMaximumDuration)

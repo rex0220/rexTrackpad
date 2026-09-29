@@ -11,6 +11,8 @@ final class MappingAndResolverTests: XCTestCase {
         }
         XCTAssertNil(TrackpadGesture(identifier: "pinch.4"))
         XCTAssertNil(TrackpadGesture(identifier: "swipe.3.sideways"))
+        XCTAssertEqual(TrackpadGesture(identifier: "tap.3.left"), .threeFingerTapLeft)
+        XCTAssertNil(TrackpadGesture(identifier: "tap.3.top"))
     }
 
     func testActionIdentifiersRoundTrip() {
@@ -25,6 +27,8 @@ final class MappingAndResolverTests: XCTestCase {
     func testDefaultMappingMatchesSpec() {
         let mapping = GestureMapping.defaults
         XCTAssertEqual(mapping.action(for: .threeFingerTap), .browser(.reload))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.back))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapRight), .browser(.forward))
         XCTAssertEqual(mapping.action(for: .fourFingerTap), .browser(.openLinkInNewTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeRight), .browser(.nextTab))
@@ -32,6 +36,14 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeDown), .browser(.closeTab))
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeLeft), .browser(.back))
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeRight), .browser(.forward))
+    }
+
+    func testUnboundZoneTapFallsBackToThePlainTap() {
+        // e.g. assignments saved by 0.2.0, before zone taps existed.
+        let mapping = GestureMapping([.threeFingerTap: .browser(.reload)])
+        XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.reload))
+        XCTAssertNil(mapping.ownAction(for: .threeFingerTapLeft))
+        XCTAssertNil(mapping.action(for: .zoneTap(fingers: 4, zone: .right)))
     }
 
     func testMappingCodableRoundTripAndForwardCompatibility() throws {

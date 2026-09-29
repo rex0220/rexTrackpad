@@ -16,6 +16,9 @@ struct GestureMapping: Equatable, Sendable {
     /// or moved to a different finger count (see `SystemGestureConflictDetector`).
     static let defaults = GestureMapping([
         .threeFingerTap: .browser(.reload),
+        // Tap on the left / right side of the trackpad to go back / forward.
+        .threeFingerTapLeft: .browser(.back),
+        .threeFingerTapRight: .browser(.forward),
         // Point at a link and tap with four fingers. Hard Reload is available from the menu.
         .fourFingerTap: .browser(.openLinkInNewTab),
 
@@ -29,7 +32,14 @@ struct GestureMapping: Equatable, Sendable {
         .fourFingerSwipeRight: .browser(.forward),
     ])
 
+    /// The action to run: the gesture's own binding, else its fallback's
+    /// (a zone tap without a binding acts like the plain tap).
     func action(for gesture: TrackpadGesture) -> GestureAction? {
+        bindings[gesture] ?? gesture.fallback.flatMap { bindings[$0] }
+    }
+
+    /// The gesture's own binding, ignoring fallbacks (for the menu).
+    func ownAction(for gesture: TrackpadGesture) -> GestureAction? {
         bindings[gesture]
     }
 

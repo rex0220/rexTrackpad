@@ -83,7 +83,7 @@ final class SystemGestureConflictDetector {
 
     private func systemFeature(for gesture: TrackpadGesture) -> SystemGestureFeature? {
         switch gesture {
-        case .tap(let fingers):
+        case .tap(let fingers), .zoneTap(let fingers, _):
             // "Look up & data detectors → Tap with three fingers" (default is Force Click = 0).
             if fingers == 3, trackpadSetting("TrackpadThreeFingerTapGesture", defaultValue: 0) != 0 {
                 return .lookUp

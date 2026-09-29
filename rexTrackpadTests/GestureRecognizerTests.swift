@@ -82,6 +82,13 @@ final class GestureRecognizerTests: XCTestCase {
         XCTAssertEqual(recognizer.state, .idle)
     }
 
+    func testTapZonesFollowTheFingerCentre() {
+        tap(fingers: 3, start: 0, end: 0.1)                       // centre x 0.4 → middle
+        send(1.0, fingers(3, x: 0.05)); send(1.1, [])               // centre x 0.15 → left side
+        send(2.0, fingers(3, x: 0.70)); send(2.1, [])               // centre x 0.80 → right side
+        XCTAssertEqual(recognized, [.threeFingerTap, .threeFingerTapLeft, .threeFingerTapRight])
+    }
+
     func testFourFingerTapIsNotReportedAsThreeFingerTap() {
         send(0.00, fingers(3))
         send(0.01, fingers(3))

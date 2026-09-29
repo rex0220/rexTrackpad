@@ -17,6 +17,7 @@ struct SettingsView: View {
             Section("Tap") {
                 slider("Maximum duration", value: configuration(\.tapMaximumDuration), range: 0.15...0.60, format: "%.2f s")
                 slider("Maximum movement", value: configuration(\.tapMaximumMovement), range: 0.02...0.10, format: "%.2f")
+                slider("Side zone width", value: configuration(\.tapZoneEdge), range: 0.20...0.45, format: "%.2f")
             }
 
             Section("Swipe") {

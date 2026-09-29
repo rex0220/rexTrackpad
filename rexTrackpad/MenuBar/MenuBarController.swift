@@ -80,10 +80,13 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let avoidConflicts = settings.avoidsSystemGestureConflicts
 
         for gesture in TrackpadGesture.configurable {
-            let bound = mapping.action(for: gesture)
+            let bound = mapping.ownAction(for: gesture)
             let conflict = controller.activeConflict(for: gesture)
+            // A zone tap without its own action does whatever the plain tap does.
+            let unboundTitle = gesture.fallback.map { String(localized: "Same as \($0.displayName)") }
+                ?? String(localized: "None")
 
-            var title = "\(bound?.displayName ?? String(localized: "None"))  —  \(gesture.displayName)"
+            var title = "\(bound?.displayName ?? unboundTitle)  —  \(gesture.displayName)"
             if conflict != nil {
                 title += avoidConflicts ? "  " + String(localized: "(off: macOS gesture)") : "  ⚠︎"
             }
@@ -107,7 +110,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 actions.addItem(.separator())
             }
 
-            actions.addItem(makeBindingItem(title: String(localized: "None"), gesture: gesture, action: nil, checked: bound == nil))
+            actions.addItem(makeBindingItem(title: unboundTitle, gesture: gesture, action: nil, checked: bound == nil))
             for action in GestureAction.allBuiltIn {
                 actions.addItem(makeBindingItem(title: action.displayName, gesture: gesture, action: action, checked: bound == action))
             }

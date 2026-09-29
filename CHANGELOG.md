@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Position-aware taps**: a 3-finger tap on the left or right side of the trackpad
+  (by default: Back / Forward) can differ from a tap in the middle (Reload). The side
+  width is adjustable in Gesture Settings. A side without its own assignment acts like
+  the plain 3-finger tap, so assignments saved by earlier versions keep working.
+
+### 日本語
+- **追加**: 位置で分けるタップ。トラックパッドの左側・右側での3本指タップに、中央
+  （再読み込み）とは別の操作を割り当てられます（初期設定は左側＝戻る、右側＝進む）。
+  区域の幅は「ジェスチャー設定」で調整できます。左右に割り当てがない場合は普通の
+  3本指タップと同じ動作なので、以前のバージョンで保存した割り当てもそのまま使えます。
+
 ## 0.2.0 — 2026-09-29
 
 ### Added
