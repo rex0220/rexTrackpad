@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode user data
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Build products
+build/
+DerivedData/
+*.xcarchive
+*.app
+*.zip
+*.dmg
+
+# Test results / logs
+*.xcresult
+*.log
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
