@@ -90,6 +90,20 @@ final class GestureRecognizer {
         var clickDetected = false
         var fingerLifted = false
         var anchor: Anchor?
+
+        // Circle detection: the centre of the full finger set over time.
+        var path: [PathSample] = []
+        var pathFingers = 0
+        /// Set once a finger lifts; the drawing is over.
+        var pathClosed = false
+        /// False after a click, too many fingers, a debounce, …
+        var circleEligible = true
+    }
+
+    private struct PathSample {
+        var time: TimeInterval
+        /// Fingers' centre, x scaled by the aspect ratio.
+        var point: CGPoint
     }
 
     private var session = Session()
@@ -134,6 +148,8 @@ final class GestureRecognizer {
             if !contacts.isEmpty {
                 let sinceLast = time - lastRecognitionTime
                 if sinceLast < configuration.cooldown {
+                    session = Session()
+                    session.circleEligible = false
                     state = .waitingForRelease
                     emit(.debounced(sinceLastGesture: sinceLast))
                 } else {
@@ -147,13 +163,21 @@ final class GestureRecognizer {
 
         case .recognized, .waitingForRelease:
             if contacts.isEmpty {
-                if let pending = pendingSwipe {
+                if let (circle, circleMetrics) = circleAtRelease() {
+                    // The start of a circle looks like a swipe; the whole path decides.
+                    pendingSwipe = nil
+                    report(circle, metrics: circleMetrics, at: time)
+                } else if let pending = pendingSwipe {
                     pendingSwipe = nil
                     lastRecognitionTime = time
                     emit(.recognized(pending.gesture, pending.metrics))
                 }
                 state = .idle
             }
+        }
+
+        if state != .idle, !contacts.isEmpty {
+            recordPath(contacts, at: time)
         }
 
         if let onDiagnostics {
@@ -343,8 +367,13 @@ final class GestureRecognizer {
         // Every finger is up: whatever happens below, the next frame starts fresh.
         defer { state = .idle }
 
+        if let (circle, circleMetrics) = circleAtRelease() {
+            report(circle, metrics: circleMetrics, at: time)
+            return
+        }
+
         let fingers = session.maxFingers
-        // One- and two-finger input is ordinary clicking / scrolling: stay silent.
+        // Otherwise one- and two-finger input is ordinary clicking / scrolling: stay silent.
         guard fingers >= configuration.minimumFingers else { return }
 
         let duration = time - session.startTime
@@ -396,6 +425,131 @@ final class GestureRecognizer {
         return .tap(fingers: fingers)
     }
 
+    // MARK: - Circles
+
+    private func recordPath(_ contacts: [TouchPoint], at time: TimeInterval) {
+        guard session.circleEligible, !session.pathClosed else { return }
+        let count = contacts.count
+        if count > session.pathFingers {
+            // Another finger joined: start over with the full set.
+            session.pathFingers = count
+            session.path.removeAll(keepingCapacity: true)
+        } else if count < session.pathFingers {
+            session.pathClosed = true // lifting: the drawing is over
+            return
+        }
+        // Keep only the last `circleMaximumDuration`: a circle is often drawn right after
+        // moving the pointer, without lifting the finger. This also bounds the path.
+        let oldest = time - configuration.circleMaximumDuration
+        if let index = session.path.firstIndex(where: { $0.time >= oldest }), index > 0 {
+            session.path.removeFirst(index)
+        }
+        let n = CGFloat(count)
+        let centre = CGPoint(
+            x: contacts.reduce(0) { $0 + $1.position.x } / n * CGFloat(configuration.aspectRatio),
+            y: contacts.reduce(0) { $0 + $1.position.y } / n
+        )
+        session.path.append(PathSample(time: time, point: centre))
+    }
+
+    /// Judges the recorded path once every finger is up. Looks for the shortest stretch
+    /// at the end of the path that turns at least the required angle, consistently one
+    /// way, around a roughly constant radius — so movement before the circle is ignored.
+    private func circleAtRelease() -> (TrackpadGesture, GestureMetrics)? {
+        let path = session.path
+        let fingers = session.pathFingers
+        let singleFinger = fingers == 1
+        guard session.circleEligible, !session.clickDetected,
+              singleFinger || (configuration.minimumFingers...configuration.maximumFingers).contains(fingers),
+              path.count >= 8 else { return nil }
+        let limits = CircleLimits(
+            minimumTurn: (singleFinger ? configuration.singleFingerCircleMinimumTurn : configuration.circleMinimumTurn) * .pi / 180,
+            minimumRadius: configuration.circleMinimumRadius
+        )
+
+        var closest: CircleFit?
+        for start in stride(from: path.count - 8, through: 0, by: -2) {
+            let fit = fitCircle(path[start...])
+            if fit.isCircle(configuration, limits) {
+                let direction: CircleDirection = fit.turn > 0 ? .counterClockwise : .clockwise
+                Log.verbose(Log.gesture, fit.summary)
+                let metrics = GestureMetrics(fingers: fingers, duration: fit.duration, translation: .zero, maxFingerMovement: session.maxMovement)
+                return (.circle(fingers: fingers, direction: direction), metrics)
+            }
+            // Ignore the jitter of a lifting finger when picking the near miss to log.
+            if fit.radius >= 0.02, abs(fit.turn) > abs(closest?.turn ?? 0) {
+                closest = fit
+            }
+        }
+        // Log near misses (at least half a turn) so thresholds can be tuned from Release logs.
+        if let closest = closest, abs(closest.turn) >= .pi {
+            Log.gesture.info("circle not recognized (\(fingers, privacy: .public) finger(s)): \(closest.summary, privacy: .public)")
+        }
+        return nil
+    }
+
+    private struct CircleLimits {
+        var minimumTurn: Double
+        var minimumRadius: Double
+    }
+
+    private struct CircleFit {
+        var duration: TimeInterval
+        var radius: Double
+        /// Standard deviation of the radius / mean radius.
+        var radiusVariation: Double
+        /// Signed turn in radians; y points up, so positive = counter-clockwise.
+        var turn: Double
+        var totalTurn: Double
+
+        func isCircle(_ configuration: GestureConfiguration, _ limits: CircleLimits) -> Bool {
+            duration >= configuration.circleMinimumDuration
+                && duration <= configuration.circleMaximumDuration
+                && radius >= limits.minimumRadius
+                && radiusVariation <= configuration.circleMaximumRadiusVariation
+                && abs(turn) >= limits.minimumTurn
+                && abs(turn) >= configuration.circleDirectionConsistency * totalTurn
+        }
+
+        var summary: String {
+            String(format: "turn=%.0f° (consistency %.2f) radius=%.3f variation=%.2f duration=%.2fs",
+                   turn * 180 / .pi, totalTurn > 0 ? abs(turn) / totalTurn : 0, radius, radiusVariation, duration)
+        }
+    }
+
+    private func fitCircle(_ path: ArraySlice<PathSample>) -> CircleFit {
+        let n = CGFloat(path.count)
+        let centre = CGPoint(
+            x: path.reduce(0) { $0 + $1.point.x } / n,
+            y: path.reduce(0) { $0 + $1.point.y } / n
+        )
+        let radii = path.map { hypot(Double($0.point.x - centre.x), Double($0.point.y - centre.y)) }
+        let meanRadius = radii.reduce(0, +) / Double(radii.count)
+        let variance = radii.reduce(0) { $0 + ($1 - meanRadius) * ($1 - meanRadius) } / Double(radii.count)
+
+        func angle(_ sample: PathSample) -> Double {
+            atan2(Double(sample.point.y - centre.y), Double(sample.point.x - centre.x))
+        }
+        var turn = 0.0
+        var totalTurn = 0.0
+        var previous = angle(path[path.startIndex])
+        for sample in path.dropFirst() {
+            let current = angle(sample)
+            var delta = current - previous
+            if delta > .pi { delta -= 2 * .pi } else if delta < -.pi { delta += 2 * .pi }
+            turn += delta
+            totalTurn += abs(delta)
+            previous = current
+        }
+        return CircleFit(
+            duration: path[path.endIndex - 1].time - path[path.startIndex].time,
+            radius: meanRadius,
+            radiusVariation: meanRadius > 0 ? variance.squareRoot() / meanRadius : .infinity,
+            turn: turn,
+            totalTurn: totalTurn
+        )
+    }
+
     // MARK: - Outcomes
 
     private func recognize(_ gesture: TrackpadGesture, metrics: GestureMetrics, at time: TimeInterval) {
@@ -411,7 +565,20 @@ final class GestureRecognizer {
         emit(.recognized(gesture, metrics))
     }
 
+    /// Reports a gesture whose fingers are already up.
+    private func report(_ gesture: TrackpadGesture, metrics: GestureMetrics, at time: TimeInterval) {
+        state = .recognized(gesture)
+        lastRecognitionTime = time
+        emit(.recognized(gesture, metrics))
+    }
+
     private func reject(_ reason: GestureRejection, metrics: GestureMetrics) {
+        switch reason {
+        case .diagonalSwipe, .swipeTooSlow, .inconsistentFingers:
+            break // the movement may still turn out to be a circle
+        default:
+            session.circleEligible = false
+        }
         state = .waitingForRelease
         emit(.rejected(reason, metrics))
     }

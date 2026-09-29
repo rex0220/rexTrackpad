@@ -74,6 +74,29 @@ final class GestureRecognizerTests: XCTestCase {
         send(t, [])
     }
 
+    /// Three fingers moving together around a circle. `radius` is in trackpad heights.
+    private func drawCircle(clockwise: Bool, radius: CGFloat = 0.12, turns: Double = 1.0,
+                            duration: TimeInterval = 0.8, start: TimeInterval = 0, fingerCount: Int = 3) {
+        let frames = Int(duration / frameInterval)
+        var t = start
+        for i in 0...frames {
+            let angle = (clockwise ? -1.0 : 1.0) * Double(i) / Double(frames) * turns * 2 * .pi
+            let centreX = 0.5 + radius * CGFloat(cos(angle)) / 1.6 // x is scaled by the 1.6 aspect ratio
+            let centreY = 0.5 + radius * CGFloat(sin(angle))
+            // fingers(n) are centred at x + (n - 1) * 0.05
+            send(t, fingers(fingerCount, x: centreX - CGFloat(fingerCount - 1) * 0.05, y: centreY))
+            t += frameInterval
+        }
+        send(t, [])
+    }
+
+    private var circles: [TrackpadGesture] {
+        recognized.filter { gesture -> Bool in
+            if case .circle = gesture { return true }
+            return false
+        }
+    }
+
     // MARK: - Taps
 
     func testThreeFingerTapIsRecognized() {
@@ -264,6 +287,95 @@ final class GestureRecognizerTests: XCTestCase {
         send(t, fingers(1, x: 0.6))
         send(t + frameInterval, [])
         XCTAssertEqual(recognized, [.threeFingerSwipeRight])
+    }
+
+    // MARK: - Circles
+
+    func testClockwiseCircleIsRecognizedOnce() {
+        drawCircle(clockwise: true)
+        // The start of the circle looks like a swipe, but only the circle is reported.
+        XCTAssertEqual(recognized, [.threeFingerCircleClockwise])
+    }
+
+    func testCounterClockwiseCircle() {
+        drawCircle(clockwise: false)
+        XCTAssertEqual(recognized, [.threeFingerCircleCounterClockwise])
+    }
+
+    func testHalfCircleIsNotACircle() {
+        drawCircle(clockwise: true, turns: 0.5, duration: 0.5)
+        XCTAssertTrue(circles.isEmpty)
+    }
+
+    func testTinyLoopIsNotACircle() {
+        drawCircle(clockwise: false, radius: 0.02)
+        XCTAssertTrue(circles.isEmpty)
+    }
+
+    func testOneFingerCircle() {
+        drawCircle(clockwise: true, turns: 1.05, fingerCount: 1)
+        XCTAssertEqual(recognized, [.oneFingerCircleClockwise])
+    }
+
+    func testOneFingerCircleAfterMovingThePointer() {
+        // Move the pointer for 2.5 s, then draw the circle without lifting the finger.
+        var t: TimeInterval = 0
+        while t < 2.5 {
+            send(t, [(1, 0.2 + CGFloat(t) * 0.1, 0.3)])
+            t += frameInterval
+        }
+        let frames = Int(0.9 / frameInterval)
+        for i in 0...frames {
+            let angle = -Double(i) / Double(frames) * 1.1 * 2 * .pi
+            send(t, [(1, 0.6 + 0.12 * CGFloat(cos(angle)) / 1.6, 0.5 + 0.12 * CGFloat(sin(angle)))])
+            t += frameInterval
+        }
+        send(t, [])
+        XCTAssertEqual(recognized, [.oneFingerCircleClockwise])
+    }
+
+    func testOneFingerNeedsAlmostAFullTurn() {
+        // 310° is enough for three fingers (300°), not for one finger (330°).
+        drawCircle(clockwise: false, turns: 310.0 / 360, fingerCount: 1)
+        XCTAssertTrue(circles.isEmpty)
+        drawCircle(clockwise: false, turns: 310.0 / 360, start: 2)
+        XCTAssertEqual(circles, [.threeFingerCircleCounterClockwise])
+    }
+
+    func testSmallButRealOneFingerCircle() {
+        // Just above the minimum size (0.06), drawn at hardware speed.
+        drawCircle(clockwise: true, radius: 0.07, turns: 1.0, duration: 0.7, fingerCount: 1)
+        XCTAssertEqual(recognized, [.oneFingerCircleClockwise])
+    }
+
+    func testCircleBelowMinimumSizeIsIgnored() {
+        drawCircle(clockwise: true, radius: 0.045, turns: 1.0, duration: 0.7, fingerCount: 1)
+        XCTAssertTrue(circles.isEmpty)
+    }
+
+    func testOrdinaryPointingIsIgnored() {
+        // One finger wandering around for several seconds, then lifting.
+        var t: TimeInterval = 0
+        for i in 0...600 {
+            let a = Double(i) / 40
+            send(t, [(1, 0.5 + 0.2 * CGFloat(sin(a)), 0.5 + 0.1 * CGFloat(sin(a * 1.7)))])
+            t += frameInterval
+        }
+        send(t, [])
+        XCTAssertTrue(recognized.isEmpty)
+        XCTAssertTrue(rejections.isEmpty)
+    }
+
+    func testClickDuringOneFingerCircleCancelsIt() {
+        send(0, [(1, 0.5, 0.5)])
+        recognizer.noteClick()
+        drawCircle(clockwise: true, turns: 1.05, start: frameInterval, fingerCount: 1)
+        XCTAssertTrue(circles.isEmpty)
+    }
+
+    func testSlowCircleIsNotRecognized() {
+        drawCircle(clockwise: true, duration: 3.0)
+        XCTAssertTrue(circles.isEmpty)
     }
 
     // MARK: - Debounce

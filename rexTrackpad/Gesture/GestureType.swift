@@ -40,6 +40,19 @@ enum TapZone: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// Which way a circle was drawn.
+enum CircleDirection: String, Codable, CaseIterable, Sendable {
+    case clockwise
+    case counterClockwise
+
+    var displayName: String {
+        switch self {
+        case .clockwise: return String(localized: "Clockwise")
+        case .counterClockwise: return String(localized: "Counter-clockwise")
+        }
+    }
+}
+
 /// A physical gesture performed on the trackpad.
 ///
 /// Gestures say nothing about *what* happens; that is `GestureAction`, and the
@@ -55,6 +68,8 @@ enum TrackpadGesture: Hashable, Sendable {
     /// `.tap`, and a zone tap without its own binding behaves like `.tap` (`fallback`).
     case zoneTap(fingers: Int, zone: TapZone)
     case swipe(fingers: Int, direction: SwipeDirection)
+    /// A circle drawn with the fingers, judged when they lift.
+    case circle(fingers: Int, direction: CircleDirection)
 
     static let threeFingerTap = TrackpadGesture.tap(fingers: 3)
     static let threeFingerTapLeft = TrackpadGesture.zoneTap(fingers: 3, zone: .left)
@@ -69,6 +84,11 @@ enum TrackpadGesture: Hashable, Sendable {
     static let fourFingerSwipeLeft = TrackpadGesture.swipe(fingers: 4, direction: .left)
     static let fourFingerSwipeRight = TrackpadGesture.swipe(fingers: 4, direction: .right)
 
+    static let oneFingerCircleClockwise = TrackpadGesture.circle(fingers: 1, direction: .clockwise)
+    static let oneFingerCircleCounterClockwise = TrackpadGesture.circle(fingers: 1, direction: .counterClockwise)
+    static let threeFingerCircleClockwise = TrackpadGesture.circle(fingers: 3, direction: .clockwise)
+    static let threeFingerCircleCounterClockwise = TrackpadGesture.circle(fingers: 3, direction: .counterClockwise)
+
     /// Gestures offered in the menu, in display order.
     static let configurable: [TrackpadGesture] = [
         .threeFingerTap,
@@ -81,11 +101,15 @@ enum TrackpadGesture: Hashable, Sendable {
         .threeFingerSwipeDown,
         .fourFingerSwipeLeft,
         .fourFingerSwipeRight,
+        .threeFingerCircleClockwise,
+        .threeFingerCircleCounterClockwise,
+        .oneFingerCircleClockwise,
+        .oneFingerCircleCounterClockwise,
     ]
 
     var fingerCount: Int {
         switch self {
-        case .tap(let fingers), .zoneTap(let fingers, _), .swipe(let fingers, _):
+        case .tap(let fingers), .zoneTap(let fingers, _), .swipe(let fingers, _), .circle(let fingers, _):
             return fingers
         }
     }
@@ -107,6 +131,8 @@ enum TrackpadGesture: Hashable, Sendable {
             return "tap.\(fingers).\(zone.rawValue)"
         case .swipe(let fingers, let direction):
             return "swipe.\(fingers).\(direction.rawValue)"
+        case .circle(let fingers, let direction):
+            return "circle.\(fingers).\(direction.rawValue)"
         }
     }
 
@@ -122,6 +148,9 @@ enum TrackpadGesture: Hashable, Sendable {
         case ("swipe", 3):
             guard let direction = SwipeDirection(rawValue: parts[2]) else { return nil }
             self = .swipe(fingers: fingers, direction: direction)
+        case ("circle", 3):
+            guard let direction = CircleDirection(rawValue: parts[2]) else { return nil }
+            self = .circle(fingers: fingers, direction: direction)
         default:
             return nil
         }
@@ -135,6 +164,8 @@ enum TrackpadGesture: Hashable, Sendable {
             return String(localized: "\(fingers)-Finger Tap (\(zone.displayName))")
         case .swipe(let fingers, let direction):
             return String(localized: "\(fingers)-Finger Swipe \(direction.displayName)")
+        case .circle(let fingers, let direction):
+            return String(localized: "\(fingers)-Finger Circle (\(direction.displayName))")
         }
     }
 }

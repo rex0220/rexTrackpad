@@ -56,6 +56,8 @@ final class ConflictDetectorTests: XCTestCase {
         XCTAssertNotNil(detector.conflict(for: .threeFingerSwipeLeft))
         XCTAssertNotNil(detector.conflict(for: .threeFingerSwipeUp))
         XCTAssertNotNil(detector.conflict(for: .fourFingerSwipeRight))
+        XCTAssertNotNil(detector.conflict(for: .threeFingerCircleClockwise))
+        XCTAssertNil(detector.conflict(for: .oneFingerCircleClockwise))
         XCTAssertNil(detector.conflict(for: .swipe(fingers: 5, direction: .left)))
     }
 
@@ -69,6 +71,7 @@ final class ConflictDetectorTests: XCTestCase {
         let detector = SystemGestureConflictDetector(reader: prefs)
         XCTAssertNil(detector.conflict(for: .threeFingerSwipeLeft))
         XCTAssertNil(detector.conflict(for: .threeFingerSwipeDown))
+        XCTAssertNil(detector.conflict(for: .threeFingerCircleCounterClockwise))
         XCTAssertEqual(detector.conflict(for: .fourFingerSwipeLeft)?.feature, .swipeBetweenPagesOrApps)
     }
 

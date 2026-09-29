@@ -30,6 +30,10 @@ struct GestureMapping: Equatable, Sendable {
 
         .fourFingerSwipeLeft: .browser(.back),
         .fourFingerSwipeRight: .browser(.forward),
+
+        // Draw a circle with three fingers.
+        .threeFingerCircleClockwise: .browser(.reopenClosedTab),
+        .threeFingerCircleCounterClockwise: .browser(.hardReload),
     ])
 
     /// The action to run: the gesture's own binding, else its fallback's

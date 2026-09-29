@@ -25,6 +25,7 @@ private enum CommonCommands {
     static let reload = BrowserCommand.shortcut(KeyboardShortcut(.character("r"), [.command]))
     static let newTab = BrowserCommand.shortcut(KeyboardShortcut(.character("t"), [.command]))
     static let closeTab = BrowserCommand.shortcut(KeyboardShortcut(.character("w"), [.command]))
+    static let reopenClosedTab = BrowserCommand.shortcut(KeyboardShortcut(.character("t"), [.command, .shift]))
     // ⌘[ / ⌘] are documented by Chrome, Edge, Safari and Firefox. The bracket keys sit in
     // different places on JIS / ISO / non-QWERTY layouts, which is why `.character` keys are
     // resolved against the active keyboard layout when sent.
@@ -45,6 +46,7 @@ struct ChromiumCommandProvider: BrowserCommandProvider {
         case .previousTab: return .shortcut(KeyboardShortcut(.tab, [.control, .shift]))
         case .newTab: return CommonCommands.newTab
         case .closeTab: return CommonCommands.closeTab
+        case .reopenClosedTab: return CommonCommands.reopenClosedTab
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab
@@ -62,6 +64,7 @@ struct SafariCommandProvider: BrowserCommandProvider {
         case .previousTab: return .shortcut(KeyboardShortcut(.tab, [.control, .shift]))
         case .newTab: return CommonCommands.newTab
         case .closeTab: return CommonCommands.closeTab
+        case .reopenClosedTab: return CommonCommands.reopenClosedTab
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab
@@ -80,6 +83,7 @@ struct FirefoxCommandProvider: BrowserCommandProvider {
         case .previousTab: return .shortcut(KeyboardShortcut(.leftArrow, [.command, .option]))
         case .newTab: return CommonCommands.newTab
         case .closeTab: return CommonCommands.closeTab
+        case .reopenClosedTab: return CommonCommands.reopenClosedTab
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab

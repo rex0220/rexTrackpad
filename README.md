@@ -22,6 +22,9 @@ clicking, scrolling and macOS gestures keep working.
 - Open the link under the pointer in a new tab
 - Position-aware taps: a 3-finger tap on the left / right side of the trackpad
   can do something different from a tap in the middle
+- Circle gestures: draw a circle with three fingers or one finger, clockwise or
+  counter-clockwise
+- Reopen the last closed tab
 - Per-browser enable / disable
 - Rebind any gesture to any action from the menu
 - Automatic protection against collisions with macOS system gestures
@@ -54,6 +57,9 @@ When any other app is frontmost, gestures do nothing.
 | 3-finger swipe down | Close Tab | ⚠️ Only if App Exposé is not on 3-finger swipe down |
 | 4-finger swipe left | Back | ⚠️ Only if macOS is not using 4-finger horizontal swipes |
 | 4-finger swipe right | Forward | ⚠️ Only if macOS is not using 4-finger horizontal swipes |
+| 3-finger circle, clockwise | Reopen Closed Tab | ⚠️ Only if macOS is not using 3-finger swipes (a circle starts like a swipe) |
+| 3-finger circle, counter-clockwise | Hard Reload | ⚠️ Same condition |
+| 1-finger circle, clockwise / counter-clockwise | *(not assigned)* | ✅ Yes — the pointer moves while you draw |
 
 ### Why some gestures are "off" by default
 
@@ -263,6 +269,7 @@ different shortcuts only needs its own provider.
 | Previous Tab | ⌃⇧⇥ | ⌃⇧⇥ | ⌥⌘← |
 | New Tab | ⌘T | ⌘T | ⌘T |
 | Close Tab | ⌘W | ⌘W | ⌘W |
+| Reopen Closed Tab | ⇧⌘T | ⇧⌘T | ⇧⌘T |
 | Back | ⌘[ | ⌘[ | ⌘[ |
 | Forward | ⌘] | ⌘] | ⌘] |
 | Open Link in New Tab | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer |
@@ -326,6 +333,12 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   - A recognised swipe **fires when the fingers lift**: shortcuts sent while fingers
     are still moving race with the trackpad's own events, and Chrome then
     intermittently ignored ⌃Tab.
+- **Circle**: judged when the fingers lift, on the last 1.5 s of the fingers' centre.
+  The shortest stretch at the end that turns at least 300° (one finger: 330°),
+  consistently one way (≥ 90 %), around a roughly constant radius (spread ≤ 35 %) of
+  at least 0.06 trackpad heights, in 0.25–1.5 s, is a circle — so moving the pointer
+  first and then drawing without lifting works. A circle wins over the swipe its
+  start may look like. Near misses (half a turn or more) are logged with the reason.
 - A 0.35 s cooldown after each gesture plus a 0.2 s dispatcher debounce prevent
   double firing.
 - **Shortcuts are typed like a person would**: modifier keys down one by one, the

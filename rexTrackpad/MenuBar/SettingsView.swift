@@ -70,7 +70,7 @@ struct SettingsView: View {
         }
         .padding(12)
         // Same size for every tab, so switching tabs does not resize the window.
-        .frame(width: 560, height: 510, alignment: .top)
+        .frame(width: 560, height: 645, alignment: .top)
     }
 
     /// Tab contents start at the top instead of being centred vertically.
@@ -168,6 +168,9 @@ struct SettingsView: View {
                     Label("Also used by macOS", systemImage: "exclamationmark.triangle.fill")
                         .foregroundColor(.orange)
                         .help(String(localized: "Used by macOS: \(blocked.displayName)"))
+                } else if case .circle(1, _) = gesture {
+                    Text("Moves the pointer too")
+                        .foregroundColor(.secondary)
                 } else {
                     Text(verbatim: "")
                 }
@@ -207,6 +210,10 @@ struct SettingsView: View {
                 slider("Minimum distance", value: configuration(\.swipeMinimumDistance), range: 0.10...0.40, format: "%.2f")
                 slider("Maximum duration", value: configuration(\.swipeMaximumDuration), range: 0.30...1.20, format: "%.2f s")
                 slider("Direction strictness", value: configuration(\.swipeDirectionRatio), range: 1.2...4.0, format: "%.1f×")
+            }
+            sliderGroup("Circle") {
+                slider("Minimum size", value: configuration(\.circleMinimumRadius), range: 0.02...0.15, format: "%.2f")
+                slider("Required turn", value: configuration(\.circleMinimumTurn), range: 240...360, format: "%.0f°")
             }
             sliderGroup("Repeat protection") {
                 slider("Cooldown after a gesture", value: configuration(\.cooldown), range: 0.10...1.00, format: "%.2f s")

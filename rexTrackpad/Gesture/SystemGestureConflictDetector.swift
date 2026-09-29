@@ -90,6 +90,16 @@ final class SystemGestureConflictDetector {
             }
             return nil
 
+        case .circle(let fingers, _):
+            // A circle starts like a swipe, so any macOS swipe with the same number of
+            // fingers reacts to it as well.
+            for direction in [SwipeDirection.left, .up, .down] {
+                if let feature = systemFeature(for: .swipe(fingers: fingers, direction: direction)) {
+                    return feature
+                }
+            }
+            return nil
+
         case .swipe(let fingers, let direction):
             if fingers == 3, trackpadSetting("TrackpadThreeFingerDrag", defaultValue: 0) != 0 {
                 return .threeFingerDrag

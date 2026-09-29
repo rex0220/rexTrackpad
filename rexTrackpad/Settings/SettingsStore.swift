@@ -110,9 +110,28 @@ final class SettingsStore: ObservableObject {
             return configuration
         }
         set {
-            guard let data = try? encoder.encode(newValue) else { return }
-            set(data, forKey: Key.gestureConfiguration)
+            // Store only the values that differ from the defaults, so improved defaults
+            // in later versions still reach thresholds the user never changed.
+            guard let changed = Self.changedValues(of: newValue, encoder: encoder) else { return }
+            if changed.isEmpty {
+                remove(Key.gestureConfiguration)
+            } else if let data = try? JSONSerialization.data(withJSONObject: changed, options: [.sortedKeys]) {
+                set(data, forKey: Key.gestureConfiguration)
+            }
         }
+    }
+
+    private static func changedValues(of configuration: GestureConfiguration, encoder: JSONEncoder) -> [String: Any]? {
+        guard let data = try? encoder.encode(configuration),
+              let defaultData = try? encoder.encode(GestureConfiguration.default),
+              var values = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+              let defaultValues = (try? JSONSerialization.jsonObject(with: defaultData)) as? [String: Any] else {
+            return nil
+        }
+        for (key, value) in defaultValues where (values[key] as? NSObject)?.isEqual(value) == true {
+            values.removeValue(forKey: key)
+        }
+        return values
     }
 
     func resetGestureMapping() {

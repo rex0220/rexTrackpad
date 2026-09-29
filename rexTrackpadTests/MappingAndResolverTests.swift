@@ -13,6 +13,8 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertNil(TrackpadGesture(identifier: "swipe.3.sideways"))
         XCTAssertEqual(TrackpadGesture(identifier: "tap.3.left"), .threeFingerTapLeft)
         XCTAssertNil(TrackpadGesture(identifier: "tap.3.top"))
+        XCTAssertEqual(TrackpadGesture(identifier: "circle.3.clockwise"), .threeFingerCircleClockwise)
+        XCTAssertNil(TrackpadGesture(identifier: "circle.3.sideways"))
     }
 
     func testActionIdentifiersRoundTrip() {
@@ -36,6 +38,8 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeDown), .browser(.closeTab))
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeLeft), .browser(.back))
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeRight), .browser(.forward))
+        XCTAssertEqual(mapping.action(for: .threeFingerCircleClockwise), .browser(.reopenClosedTab))
+        XCTAssertEqual(mapping.action(for: .threeFingerCircleCounterClockwise), .browser(.hardReload))
     }
 
     func testUnboundZoneTapFallsBackToThePlainTap() {
@@ -55,6 +59,25 @@ final class MappingAndResolverTests: XCTestCase {
         let future = #"{"tap.3":"browser.reload","pinch.4.in":"browser.newTab","tap.4":"app.launch"}"#
         let decoded = try JSONDecoder().decode(GestureMapping.self, from: Data(future.utf8))
         XCTAssertEqual(decoded, GestureMapping([.threeFingerTap: .browser(.reload)]))
+    }
+
+    func testOnlyChangedThresholdsAreStored() throws {
+        let suite = "rexTrackpadTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let settings = SettingsStore(defaults: defaults)
+
+        var configuration = GestureConfiguration.default
+        configuration.circleMinimumRadius = 0.02
+        settings.gestureConfiguration = configuration
+
+        let stored = try XCTUnwrap(defaults.data(forKey: SettingsStore.Key.gestureConfiguration))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: stored) as? [String: Double])
+        XCTAssertEqual(json, ["circleMinimumRadius": 0.02])
+        XCTAssertEqual(settings.gestureConfiguration, configuration)
+
+        settings.gestureConfiguration = .default
+        XCTAssertNil(defaults.data(forKey: SettingsStore.Key.gestureConfiguration))
     }
 
     func testConfigurationDecodesPartialJSON() throws {
@@ -91,6 +114,7 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(resolver.command(for: .back, in: .safari), .shortcut(KeyboardShortcut(.character("["), [.command])))
         for browser in Browser.allCases {
             XCTAssertEqual(resolver.command(for: .openLinkInNewTab, in: browser), .click([.command, .shift]))
+            XCTAssertEqual(resolver.command(for: .reopenClosedTab, in: browser), .shortcut(KeyboardShortcut(.character("t"), [.command, .shift])))
         }
     }
 

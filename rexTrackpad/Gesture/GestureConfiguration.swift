@@ -46,6 +46,25 @@ struct GestureConfiguration: Equatable, Sendable {
     /// in the swipe direction. Rejects pinches and rotations.
     var swipeFingerAgreement: Double = 0.5
 
+    // MARK: Circle
+
+    /// The fingers' centre must turn at least this far around the circle (degrees).
+    var circleMinimumTurn: Double = 300
+    /// Average radius required (trackpad heights). Smaller loops — and the jitter of a
+    /// lifting finger, typically below 0.02 — are ignored.
+    var circleMinimumRadius: Double = 0.06
+    /// Largest allowed spread of the radius (standard deviation / mean). Rejects ovals
+    /// that are too flat and zig-zags.
+    var circleMaximumRadiusVariation: Double = 0.35
+    /// How consistently the path must turn one way (net turn / total turn).
+    var circleDirectionConsistency: Double = 0.90
+    var circleMinimumDuration: TimeInterval = 0.25
+    /// Hand-drawn circles take about 0.6–0.8 s; slow, elongated loops are pointing.
+    var circleMaximumDuration: TimeInterval = 1.5
+    /// One-finger circles move the pointer like ordinary pointing, so they must turn
+    /// almost all the way round to count.
+    var singleFingerCircleMinimumTurn: Double = 330
+
     // MARK: Safety
 
     /// After a gesture fires, sessions starting within this time are ignored.
@@ -67,6 +86,9 @@ extension GestureConfiguration: Codable {
         case tapMaximumDuration, tapMaximumMovement, tapMaximumLandingSpread, tapZoneEdge
         case settleTime, swipeMinimumDistance, swipeMaximumDuration, swipeMinimumVelocity
         case swipeDirectionRatio, swipeFingerAgreement
+        case circleMinimumTurn, circleMinimumRadius, circleMaximumRadiusVariation
+        case circleDirectionConsistency, circleMinimumDuration, circleMaximumDuration
+        case singleFingerCircleMinimumTurn
         case cooldown, staleSessionTimeout
         case aspectRatio
     }
@@ -93,6 +115,13 @@ extension GestureConfiguration: Codable {
         try decode(\.swipeMinimumVelocity, .swipeMinimumVelocity)
         try decode(\.swipeDirectionRatio, .swipeDirectionRatio)
         try decode(\.swipeFingerAgreement, .swipeFingerAgreement)
+        try decode(\.circleMinimumTurn, .circleMinimumTurn)
+        try decode(\.circleMinimumRadius, .circleMinimumRadius)
+        try decode(\.circleMaximumRadiusVariation, .circleMaximumRadiusVariation)
+        try decode(\.circleDirectionConsistency, .circleDirectionConsistency)
+        try decode(\.circleMinimumDuration, .circleMinimumDuration)
+        try decode(\.circleMaximumDuration, .circleMaximumDuration)
+        try decode(\.singleFingerCircleMinimumTurn, .singleFingerCircleMinimumTurn)
         try decode(\.cooldown, .cooldown)
         try decode(\.staleSessionTimeout, .staleSessionTimeout)
         try decode(\.aspectRatio, .aspectRatio)
