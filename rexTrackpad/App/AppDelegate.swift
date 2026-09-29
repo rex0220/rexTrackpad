@@ -17,10 +17,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.menuBar = menuBar
         controller.start()
 
-        // First launch: explain which permission is needed instead of surprising the user.
-        if !controller.settings.didShowWelcome {
-            controller.settings.didShowWelcome = true
-            if controller.permissions.accessibilityStatus != .granted {
+        if controller.permissions.accessibilityStatus != .granted {
+            // The system prompt also adds rexTrackpad to Privacy & Security › Accessibility,
+            // so the user only has to flip the switch. Rebuilt (ad-hoc signed) apps need
+            // this again because macOS treats every build as a new app.
+            controller.permissions.requestAccessibility()
+
+            // First launch: also explain why the permission is needed.
+            if !controller.settings.didShowWelcome {
+                controller.settings.didShowWelcome = true
                 menuBar.showPermissions()
             }
         }

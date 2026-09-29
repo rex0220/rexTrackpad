@@ -39,11 +39,11 @@ final class PermissionManager: PermissionChecking {
     }
 
     func openAccessibilitySettings() {
-        open("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+        openPrivacyPane("Privacy_Accessibility")
     }
 
     func openInputMonitoringSettings() {
-        open("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
+        openPrivacyPane("Privacy_ListenEvent")
     }
 
     func logMissingPermissions() {
@@ -52,8 +52,18 @@ final class PermissionManager: PermissionChecking {
         }
     }
 
-    private func open(_ string: String) {
-        guard let url = URL(string: string) else { return }
-        NSWorkspace.shared.open(url)
+    /// Opens System Settings › Privacy & Security › `anchor`.
+    /// The `com.apple.settings.PrivacySecurity.extension` form is the one current macOS
+    /// resolves reliably; the legacy `com.apple.preference.security` form is a fallback.
+    private func openPrivacyPane(_ anchor: String) {
+        let candidates = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?\(anchor)",
+            "x-apple.systempreferences:com.apple.preference.security?\(anchor)",
+        ]
+        for string in candidates {
+            if let url = URL(string: string), NSWorkspace.shared.open(url) {
+                return
+            }
+        }
     }
 }
