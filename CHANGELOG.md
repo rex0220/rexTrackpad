@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- 3-finger taps on the left / right side of the trackpad now switch to the previous /
+  next tab by default (were Back / Forward, which one-finger circles now cover).
+  Existing saved assignments are kept.
+
+### 日本語
+- **変更**: 3本指タップの左側・右側の初期設定を、前のタブ／次のタブ（タブ移動）に変更しました
+  （以前は戻る／進む。戻る・進むは1本指の円で操作できます）。保存済みの割り当てはそのまま残ります。
+
 ## 0.3.1 — 2026-09-30
 
 ### Changed

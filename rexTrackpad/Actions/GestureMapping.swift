@@ -16,9 +16,9 @@ struct GestureMapping: Equatable, Sendable {
     /// or moved to a different finger count (see `SystemGestureConflictDetector`).
     static let defaults = GestureMapping([
         .threeFingerTap: .browser(.reload),
-        // Tap on the left / right side of the trackpad to go back / forward.
-        .threeFingerTapLeft: .browser(.back),
-        .threeFingerTapRight: .browser(.forward),
+        // Tap on the left / right side of the trackpad to move between tabs.
+        .threeFingerTapLeft: .browser(.previousTab),
+        .threeFingerTapRight: .browser(.nextTab),
         // Point at a link and tap with four fingers. Hard Reload is available from the menu.
         .fourFingerTap: .browser(.openLinkInNewTab),
 

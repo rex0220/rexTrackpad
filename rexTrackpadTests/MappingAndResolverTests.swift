@@ -29,8 +29,8 @@ final class MappingAndResolverTests: XCTestCase {
     func testDefaultMappingMatchesSpec() {
         let mapping = GestureMapping.defaults
         XCTAssertEqual(mapping.action(for: .threeFingerTap), .browser(.reload))
-        XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.back))
-        XCTAssertEqual(mapping.action(for: .threeFingerTapRight), .browser(.forward))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.previousTab))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapRight), .browser(.nextTab))
         XCTAssertEqual(mapping.action(for: .fourFingerTap), .browser(.openLinkInNewTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeRight), .browser(.nextTab))

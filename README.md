@@ -48,8 +48,8 @@ When any other app is frontmost, gestures do nothing.
 | Gesture | Action | Works out of the box? |
 |---|---|---|
 | 3-finger tap (middle) | Reload | ✅ Yes (unless "Look up: Tap with three fingers" is on) |
-| 3-finger tap (left side) | Back | ✅ Yes (same condition) |
-| 3-finger tap (right side) | Forward | ✅ Yes (same condition) |
+| 3-finger tap (left side) | Previous Tab | ✅ Yes (same condition) |
+| 3-finger tap (right side) | Next Tab | ✅ Yes (same condition) |
 | 4-finger tap | Open Link in New Tab (link under the pointer) | ✅ Yes |
 | 3-finger swipe left | Previous Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
 | 3-finger swipe right | Next Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
