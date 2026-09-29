@@ -20,22 +20,22 @@ struct GestureConfiguration: Equatable, Sendable {
     // MARK: Tap
 
     /// First finger down → last finger up.
-    var tapMaximumDuration: TimeInterval = 0.30
+    var tapMaximumDuration: TimeInterval = 0.35
     /// No single finger may move further than this.
-    var tapMaximumMovement: Double = 0.04
+    var tapMaximumMovement: Double = 0.05
     /// All fingers must land within this time of each other.
-    var tapMaximumLandingSpread: TimeInterval = 0.10
+    var tapMaximumLandingSpread: TimeInterval = 0.15
 
     // MARK: Swipe
 
     /// The finger count must be unchanged this long before a swipe anchor is taken.
     var settleTime: TimeInterval = 0.03
     /// Average finger travel required.
-    var swipeMinimumDistance: Double = 0.15
+    var swipeMinimumDistance: Double = 0.20
     /// `swipeMinimumDistance` must be covered within this window (slow drags never count).
     var swipeMaximumDuration: TimeInterval = 0.60
     /// Average speed required.
-    var swipeMinimumVelocity: Double = 0.30
+    var swipeMinimumVelocity: Double = 0.4
     /// The dominant axis must be this many times larger than the other one
     /// (2.0 ≈ within 26.6° of the axis). Rejects diagonal movement.
     var swipeDirectionRatio: Double = 2.0
