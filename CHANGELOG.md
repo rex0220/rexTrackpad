@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 — 2026-09-30
 
 ### Changed
 - One-finger circles are assigned by default: clockwise → Forward, counter-clockwise →
