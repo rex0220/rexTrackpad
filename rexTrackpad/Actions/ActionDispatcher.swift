@@ -12,14 +12,16 @@ enum DispatchOutcome: Equatable {
     case noFrontmostApplication
     case notABrowser(bundleIdentifier: String?)
     case browserDisabled(Browser)
-    case noShortcut(Browser, BrowserAction)
+    case noCommand(Browser, BrowserAction)
     case permissionMissing
+    /// A click action while the pointer is not over the browser's window.
+    case pointerNotOverBrowser(Browser)
     case debounced
     case sendFailed
-    case sent(Browser, BrowserAction, KeyboardShortcut)
+    case sent(Browser, BrowserAction, BrowserCommand)
 }
 
-/// Gesture → GestureAction → (BrowserAction → BrowserCommandResolver) → keyboard event.
+/// Gesture → GestureAction → (BrowserAction → BrowserCommandResolver) → keyboard / pointer event.
 ///
 /// Main thread only.
 final class ActionDispatcher {
@@ -30,6 +32,7 @@ final class ActionDispatcher {
     private let browserDetector: BrowserDetecting
     private let commandResolver: BrowserCommandResolver
     private let keyboard: KeyboardEventSending
+    private let pointer: PointerEventSending
     private let permissions: PermissionChecking
     private let clock: () -> TimeInterval
     private var lastDispatchTime: TimeInterval = -.infinity
@@ -39,6 +42,7 @@ final class ActionDispatcher {
         browserDetector: BrowserDetecting,
         commandResolver: BrowserCommandResolver = .standard,
         keyboard: KeyboardEventSending,
+        pointer: PointerEventSending,
         permissions: PermissionChecking,
         clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
     ) {
@@ -46,6 +50,7 @@ final class ActionDispatcher {
         self.browserDetector = browserDetector
         self.commandResolver = commandResolver
         self.keyboard = keyboard
+        self.pointer = pointer
         self.permissions = permissions
         self.clock = clock
     }
@@ -84,13 +89,17 @@ final class ActionDispatcher {
         }
         Log.browser.info("browser matched: \(browser.displayName, privacy: .public)")
 
-        guard let shortcut = commandResolver.shortcut(for: action, in: browser) else {
-            Log.action.error("no shortcut for \(action.rawValue, privacy: .public) in \(browser.displayName, privacy: .public)")
-            return .noShortcut(browser, action)
+        guard let command = commandResolver.command(for: action, in: browser) else {
+            Log.action.error("no command for \(action.rawValue, privacy: .public) in \(browser.displayName, privacy: .public)")
+            return .noCommand(browser, action)
         }
         guard permissions.canPostKeyboardEvents else {
-            Log.permission.error("permission missing: Accessibility is required to send \(shortcut.description, privacy: .public)")
+            Log.permission.error("permission missing: Accessibility is required to send \(command.description, privacy: .public)")
             return .permissionMissing
+        }
+        if case .click = command, !pointer.isPointerOverWindow(ofProcess: app.processIdentifier) {
+            Log.action.info("pointer is not over \(browser.displayName, privacy: .public); click not sent")
+            return .pointerNotOverBrowser(browser)
         }
 
         let now = clock()
@@ -100,10 +109,15 @@ final class ActionDispatcher {
         }
         lastDispatchTime = now
 
-        Log.action.info("browser action: \(action.rawValue, privacy: .public) → \(shortcut.description, privacy: .public)")
-        guard keyboard.send(shortcut) else {
+        Log.action.info("browser action: \(action.rawValue, privacy: .public) → \(command.description, privacy: .public)")
+        let sent: Bool
+        switch command {
+        case .shortcut(let shortcut): sent = keyboard.send(shortcut)
+        case .click(let modifiers): sent = pointer.click(with: modifiers)
+        }
+        guard sent else {
             return .sendFailed
         }
-        return .sent(browser, action, shortcut)
+        return .sent(browser, action, command)
     }
 }

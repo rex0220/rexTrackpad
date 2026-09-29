@@ -15,6 +15,8 @@ enum BrowserAction: String, Codable, CaseIterable, Sendable {
     case closeTab
     case back
     case forward
+    /// Opens the link under the mouse pointer in a new tab and switches to it.
+    case openLinkInNewTab
 
     var displayName: String {
         switch self {
@@ -26,6 +28,7 @@ enum BrowserAction: String, Codable, CaseIterable, Sendable {
         case .closeTab: return String(localized: "Close Tab")
         case .back: return String(localized: "Back")
         case .forward: return String(localized: "Forward")
+        case .openLinkInNewTab: return String(localized: "Open Link in New Tab")
         }
     }
 }

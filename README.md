@@ -19,6 +19,7 @@ clicking, scrolling and macOS gestures keep working.
 - Back / forward
 - New tab
 - Close tab
+- Open the link under the pointer in a new tab
 - Per-browser enable / disable
 - Rebind any gesture to any action from the menu
 - Automatic protection against collisions with macOS system gestures
@@ -42,7 +43,7 @@ When any other app is frontmost, gestures do nothing.
 | Gesture | Action | Works out of the box? |
 |---|---|---|
 | 3-finger tap | Reload | ✅ Yes (unless "Look up: Tap with three fingers" is on) |
-| 4-finger tap | Hard Reload | ✅ Yes |
+| 4-finger tap | Open Link in New Tab (link under the pointer) | ✅ Yes |
 | 3-finger swipe left | Previous Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
 | 3-finger swipe right | Next Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
 | 3-finger swipe up | New Tab | ⚠️ Only if Mission Control is not on 3-finger swipe up |
@@ -71,7 +72,8 @@ Taps have no system counterpart by default, so they work immediately.
 3. *Mission Control* → **Swipe Up with Four Fingers**, *App Exposé* → **Swipe Down with Four Fingers** (or off)
 
 The 3-finger swipes then become available; the 4-finger back/forward swipes stay
-off while macOS uses them. Remap any gesture from **Gestures ›** in the menu.
+off while macOS uses them. Remap any gesture from **Gestures ›** in the menu —
+Hard Reload is not bound by default but can be assigned there.
 
 ## Requirements
 
@@ -238,6 +240,7 @@ different shortcuts only needs its own provider.
 | Close Tab | ⌘W | ⌘W | ⌘W |
 | Back | ⌘[ | ⌘[ | ⌘[ |
 | Forward | ⌘] | ⌘] | ⌘] |
+| Open Link in New Tab | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer |
 
 Firefox uses ⌥⌘→/← because ⌃⇥ can be set to cycle tabs in recently-used order.
 Character keys (`R`, `T`, `W`, `[`, `]`) are resolved against the active keyboard
@@ -246,6 +249,12 @@ layout when sent, so ⌘[ / ⌘] also work on JIS and other non-US keyboards.
 Because the browsers' own shortcuts are sent (rather than reading the tab strip),
 tab switching also works with vertical tabs (Chrome, Edge and Firefox vertical
 tabs, Safari's sidebar).
+
+**Open Link in New Tab** clicks where the mouse pointer is, with ⌘⇧ held, so the
+link opens in a new tab that becomes active. rexTrackpad never reads page content,
+so it cannot tell whether a link is under the pointer; the click is only sent when
+the pointer is over a window of the frontmost browser (never onto the menu bar,
+the Dock or another app). Only window owners and bounds are read for this check.
 
 ## Architecture
 
@@ -323,6 +332,8 @@ coordinates, direction, distance, duration, recognizer state and recent events.
   taps with 3 fingers are treated as taps.
 - **Palm contact**: sessions with more than 5 contacts are ignored; there is no
   further palm rejection yet.
+- **Open Link in New Tab** acts on whatever is under the pointer: on a button
+  instead of a link it presses that button (with ⌘⇧ held).
 - **Keyboard focus**: shortcuts go to the frontmost window. Web pages that capture
   keys (some editors, games) may intercept them.
 - **Trackpad aspect ratio** is assumed to be 1.6:1 for direction/distance maths.

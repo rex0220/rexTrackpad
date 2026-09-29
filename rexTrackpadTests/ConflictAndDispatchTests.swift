@@ -28,6 +28,20 @@ private final class FakeKeyboard: KeyboardEventSending {
     }
 }
 
+private final class FakePointer: PointerEventSending {
+    var pointerOverProcess: pid_t? = 1
+    var clicks: [KeyboardModifiers] = []
+
+    func isPointerOverWindow(ofProcess processIdentifier: pid_t) -> Bool {
+        pointerOverProcess == processIdentifier
+    }
+
+    func click(with modifiers: KeyboardModifiers) -> Bool {
+        clicks.append(modifiers)
+        return true
+    }
+}
+
 private final class FakePermissions: PermissionChecking {
     var canPostKeyboardEvents = true
 }
@@ -86,6 +100,7 @@ final class ActionDispatcherTests: XCTestCase {
     private var settings: SettingsStore!
     private var detector: FakeDetector!
     private var keyboard: FakeKeyboard!
+    private var pointer: FakePointer!
     private var permissions: FakePermissions!
     private var now: TimeInterval = 100
     private var dispatcher: ActionDispatcher!
@@ -97,11 +112,13 @@ final class ActionDispatcherTests: XCTestCase {
         settings = SettingsStore(defaults: defaults)
         detector = FakeDetector()
         keyboard = FakeKeyboard()
+        pointer = FakePointer()
         permissions = FakePermissions()
         dispatcher = ActionDispatcher(
             settings: settings,
             browserDetector: detector,
             keyboard: keyboard,
+            pointer: pointer,
             permissions: permissions,
             clock: { [unowned self] in self.now }
         )
@@ -119,8 +136,22 @@ final class ActionDispatcherTests: XCTestCase {
     func testReloadInChrome() {
         front("com.google.Chrome")
         let outcome = dispatcher.dispatch(.threeFingerTap)
-        XCTAssertEqual(outcome, .sent(.chrome, .reload, KeyboardShortcut(.character("r"), [.command])))
+        XCTAssertEqual(outcome, .sent(.chrome, .reload, .shortcut(KeyboardShortcut(.character("r"), [.command]))))
         XCTAssertEqual(keyboard.sent.count, 1)
+    }
+
+    func testOpenLinkInNewTabClicksAtPointer() {
+        front("com.apple.Safari")
+        XCTAssertEqual(dispatcher.dispatch(.fourFingerTap), .sent(.safari, .openLinkInNewTab, .click([.command, .shift])))
+        XCTAssertEqual(pointer.clicks, [[.command, .shift]])
+        XCTAssertTrue(keyboard.sent.isEmpty)
+    }
+
+    func testOpenLinkIsNotClickedOutsideTheBrowser() {
+        front("com.google.Chrome")
+        pointer.pointerOverProcess = 99 // e.g. the Dock or another app's window
+        XCTAssertEqual(dispatcher.dispatch(.fourFingerTap), .pointerNotOverBrowser(.chrome))
+        XCTAssertTrue(pointer.clicks.isEmpty)
     }
 
     func testNonBrowserIsIgnored() {
@@ -159,11 +190,11 @@ final class ActionDispatcherTests: XCTestCase {
 
     func testDispatcherDebounce() {
         front("org.mozilla.firefox")
-        XCTAssertEqual(dispatcher.dispatch(.threeFingerTap), .sent(.firefox, .reload, KeyboardShortcut(.character("r"), [.command])))
+        XCTAssertEqual(dispatcher.dispatch(.threeFingerTap), .sent(.firefox, .reload, .shortcut(KeyboardShortcut(.character("r"), [.command]))))
         now += 0.05
         XCTAssertEqual(dispatcher.dispatch(.threeFingerTap), .debounced)
         now += 0.5
-        XCTAssertEqual(dispatcher.dispatch(.fourFingerTap), .sent(.firefox, .hardReload, KeyboardShortcut(.character("r"), [.command, .shift])))
+        XCTAssertEqual(dispatcher.dispatch(.threeFingerTap), .sent(.firefox, .reload, .shortcut(KeyboardShortcut(.character("r"), [.command]))))
         XCTAssertEqual(keyboard.sent.count, 2)
     }
 }

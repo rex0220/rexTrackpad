@@ -16,7 +16,8 @@ struct GestureMapping: Equatable, Sendable {
     /// or moved to a different finger count (see `SystemGestureConflictDetector`).
     static let defaults = GestureMapping([
         .threeFingerTap: .browser(.reload),
-        .fourFingerTap: .browser(.hardReload),
+        // Point at a link and tap with four fingers. Hard Reload is available from the menu.
+        .fourFingerTap: .browser(.openLinkInNewTab),
 
         .threeFingerSwipeLeft: .browser(.previousTab),
         .threeFingerSwipeRight: .browser(.nextTab),

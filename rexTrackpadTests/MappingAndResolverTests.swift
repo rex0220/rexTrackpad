@@ -25,7 +25,7 @@ final class MappingAndResolverTests: XCTestCase {
     func testDefaultMappingMatchesSpec() {
         let mapping = GestureMapping.defaults
         XCTAssertEqual(mapping.action(for: .threeFingerTap), .browser(.reload))
-        XCTAssertEqual(mapping.action(for: .fourFingerTap), .browser(.hardReload))
+        XCTAssertEqual(mapping.action(for: .fourFingerTap), .browser(.openLinkInNewTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeRight), .browser(.nextTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeUp), .browser(.newTab))
@@ -65,18 +65,21 @@ final class MappingAndResolverTests: XCTestCase {
     func testEveryBrowserHasEveryAction() {
         for browser in Browser.allCases {
             for action in BrowserAction.allCases {
-                XCTAssertNotNil(BrowserCommandResolver.standard.shortcut(for: action, in: browser), "\(browser) \(action)")
+                XCTAssertNotNil(BrowserCommandResolver.standard.command(for: action, in: browser), "\(browser) \(action)")
             }
         }
     }
 
     func testBrowserSpecificShortcuts() {
         let resolver = BrowserCommandResolver.standard
-        XCTAssertEqual(resolver.shortcut(for: .hardReload, in: .safari), KeyboardShortcut(.character("r"), [.command, .option]))
-        XCTAssertEqual(resolver.shortcut(for: .hardReload, in: .chrome), KeyboardShortcut(.character("r"), [.command, .shift]))
-        XCTAssertEqual(resolver.shortcut(for: .nextTab, in: .firefox), KeyboardShortcut(.rightArrow, [.command, .option]))
-        XCTAssertEqual(resolver.shortcut(for: .nextTab, in: .edge), KeyboardShortcut(.tab, [.control]))
-        XCTAssertEqual(resolver.shortcut(for: .back, in: .safari), KeyboardShortcut(.character("["), [.command]))
+        XCTAssertEqual(resolver.command(for: .hardReload, in: .safari), .shortcut(KeyboardShortcut(.character("r"), [.command, .option])))
+        XCTAssertEqual(resolver.command(for: .hardReload, in: .chrome), .shortcut(KeyboardShortcut(.character("r"), [.command, .shift])))
+        XCTAssertEqual(resolver.command(for: .nextTab, in: .firefox), .shortcut(KeyboardShortcut(.rightArrow, [.command, .option])))
+        XCTAssertEqual(resolver.command(for: .nextTab, in: .edge), .shortcut(KeyboardShortcut(.tab, [.control])))
+        XCTAssertEqual(resolver.command(for: .back, in: .safari), .shortcut(KeyboardShortcut(.character("["), [.command])))
+        for browser in Browser.allCases {
+            XCTAssertEqual(resolver.command(for: .openLinkInNewTab, in: browser), .click([.command, .shift]))
+        }
     }
 
     // MARK: - Keystrokes
@@ -95,6 +98,19 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertTrue(next?.flags.contains([.maskCommand, .maskAlternate, .maskSecondaryFn, .maskNumericPad]) ?? false)
 
         XCTAssertNil(resolver.resolve(KeyboardShortcut(.character("q"), [.command])))
+    }
+
+    func testModifierStepsForAClick() {
+        // ⌘⇧-click: ⇧ then ⌘ down (⌃⌥⇧⌘ order), released in reverse.
+        let flags: CGEventFlags = [.maskCommand, .maskShift]
+        XCTAssertEqual(ModifierKeys.pressSteps(for: flags), [
+            KeyEventStep(keyCode: KeyCode.shift, keyDown: true, flags: .maskShift),
+            KeyEventStep(keyCode: KeyCode.command, keyDown: true, flags: [.maskShift, .maskCommand]),
+        ])
+        XCTAssertEqual(ModifierKeys.releaseSteps(for: flags), [
+            KeyEventStep(keyCode: KeyCode.command, keyDown: false, flags: .maskShift),
+            KeyEventStep(keyCode: KeyCode.shift, keyDown: false, flags: []),
+        ])
     }
 
     func testEventSequencePressesModifiersLikeAPerson() {

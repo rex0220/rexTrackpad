@@ -21,6 +21,9 @@
         }
       }
     },
+    "%lld": {
+      "shouldTranslate": false
+    },
     "%lld-Finger Swipe %@": {
       "localizations": {
         "ja": {
@@ -131,6 +134,9 @@
         }
       }
     },
+    "Clear": {
+      "shouldTranslate": false
+    },
     "Close Tab": {
       "localizations": {
         "ja": {
@@ -190,6 +196,9 @@
           }
         }
       }
+    },
+    "Events": {
+      "shouldTranslate": false
     },
     "Forward": {
       "localizations": {
@@ -437,6 +446,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "不要"
+          }
+        }
+      }
+    },
+    "Open Link in New Tab": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リンクを新しいタブで開く"
           }
         }
       }
@@ -750,15 +769,6 @@
           }
         }
       }
-    },
-    "%lld": {
-      "shouldTranslate": false
-    },
-    "Clear": {
-      "shouldTranslate": false
-    },
-    "Events": {
-      "shouldTranslate": false
     }
   },
   "version": "1.0"

@@ -38,6 +38,7 @@ final class AppController {
             settings: settings,
             browserDetector: browserDetector,
             keyboard: CGKeyboardEventSender(),
+            pointer: CGPointerEventSender(),
             permissions: permissions
         )
     }

@@ -82,14 +82,6 @@ struct ResolvedKeystroke: Equatable, Sendable {
     let keyCode: CGKeyCode
     let flags: CGEventFlags
 
-    /// Modifier keys in the order a person presses them (⌃⌥⇧⌘).
-    private static let modifierKeys: [(flag: CGEventFlags, keyCode: CGKeyCode)] = [
-        (.maskControl, KeyCode.control),
-        (.maskAlternate, KeyCode.option),
-        (.maskShift, KeyCode.shift),
-        (.maskCommand, KeyCode.command),
-    ]
-
     /// The key events a person typing this shortcut produces: modifiers down one by
     /// one, the key down and up, then the modifiers up in reverse order.
     ///
@@ -97,21 +89,40 @@ struct ResolvedKeystroke: Equatable, Sendable {
     /// Chrome's ⌃Tab) check the live modifier state, which only changes when the
     /// modifier keys themselves are pressed.
     var eventSequence: [KeyEventStep] {
-        let modifiers = Self.modifierKeys.filter { flags.contains($0.flag) }
-        var held: CGEventFlags = []
-        var steps: [KeyEventStep] = []
+        ModifierKeys.pressSteps(for: flags)
+            + [KeyEventStep(keyCode: keyCode, keyDown: true, flags: flags),
+               KeyEventStep(keyCode: keyCode, keyDown: false, flags: flags)]
+            + ModifierKeys.releaseSteps(for: flags)
+    }
+}
 
-        for modifier in modifiers {
+/// Pressing and releasing modifier keys the way a person does, shared by keyboard
+/// shortcuts and modified clicks.
+enum ModifierKeys {
+    /// Modifier keys in the order a person presses them (⌃⌥⇧⌘).
+    private static let all: [(flag: CGEventFlags, keyCode: CGKeyCode)] = [
+        (.maskControl, KeyCode.control),
+        (.maskAlternate, KeyCode.option),
+        (.maskShift, KeyCode.shift),
+        (.maskCommand, KeyCode.command),
+    ]
+
+    /// Key-down events for the modifiers in `flags`, one at a time.
+    static func pressSteps(for flags: CGEventFlags) -> [KeyEventStep] {
+        var held: CGEventFlags = []
+        return all.filter { flags.contains($0.flag) }.map { modifier in
             held.insert(modifier.flag)
-            steps.append(KeyEventStep(keyCode: modifier.keyCode, keyDown: true, flags: held))
+            return KeyEventStep(keyCode: modifier.keyCode, keyDown: true, flags: held)
         }
-        steps.append(KeyEventStep(keyCode: keyCode, keyDown: true, flags: flags))
-        steps.append(KeyEventStep(keyCode: keyCode, keyDown: false, flags: flags))
-        for modifier in modifiers.reversed() {
+    }
+
+    /// Key-up events for the modifiers in `flags`, in reverse order.
+    static func releaseSteps(for flags: CGEventFlags) -> [KeyEventStep] {
+        var held = flags.intersection([.maskControl, .maskAlternate, .maskShift, .maskCommand])
+        return all.reversed().filter { flags.contains($0.flag) }.map { modifier in
             held.remove(modifier.flag)
-            steps.append(KeyEventStep(keyCode: modifier.keyCode, keyDown: false, flags: held))
+            return KeyEventStep(keyCode: modifier.keyCode, keyDown: false, flags: held)
         }
-        return steps
     }
 }
 
