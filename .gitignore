@@ -41,3 +41,6 @@ Package.resolved
 
 # Local code signing override (see Config/Signing.xcconfig)
 Config/Signing.local.xcconfig
+
+# Release artifacts (scripts/release.sh)
+dist/

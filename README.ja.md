@@ -82,11 +82,47 @@ macOS の初期設定では、3本指・4本指のスワイプは「フルスク
 
 ## インストール
 
-署名済みのバイナリはまだ配布していません。ソースからビルドしてください。
+1. [Releases](https://github.com/rex0220/rexTrackpad/releases) から
+   `rexTrackpad-<バージョン>.zip` をダウンロードして展開し、`rexTrackpad.app` を
+   `/Applications` に移動します。
+2. 起動します。Apple の**公証を受けていない**ため（下記）、初回の起動はブロックされます。
+   1. 「“rexTrackpad”は開かれていません」のダイアログで **完了** を押します。
+   2. システム設定 › プライバシーとセキュリティ を開き、「セキュリティ」までスクロールして、
+      rexTrackpad のメッセージの横の **このまま開く** を押します。
+   3. もう一度 **このまま開く** を押し、パスワードなどで認証します。
 
-1. Release 版をビルドし（下記）、`rexTrackpad.app` を `/Applications` に移動します。
-2. 起動すると、メニューバーに手のアイコンが表示されます（Dock には表示されません）。
-3. 求められたら**アクセシビリティ**を許可します（[権限](#権限)を参照）。
+   ターミナルを使う場合: `xattr -dr com.apple.quarantine /Applications/rexTrackpad.app`
+3. メニューバーに手のアイコンが表示されます（Dock には表示されません）。求められたら
+   **アクセシビリティ**を許可します（[権限](#権限)を参照）。
+4. 必要なら、メニューの「**ログイン時に起動**」をオンにします。
+
+### 公証を受けていない理由
+
+公証を受けたアプリを配布するには、有料の Apple Developer Program への加入が必要です。
+そのためリリース版はアドホック署名で、タグを付けたソースから GitHub Actions でビルド
+しています（`scripts/release.sh`、`.github/workflows/release.yml`）。各リリースには
+SHA-256 のチェックサムを添付しています。[自分でビルド](#ビルド)することもできます。
+
+### アップデート
+
+rexTrackpad を終了し、`/Applications` のアプリを新しいものに置き換えて起動します
+（もう一度「このまま開く」が必要な場合があります）。macOS はアドホック署名のビルドを
+毎回別のアプリとして扱うため、アクセシビリティの許可をリセットして許可し直してください。
+
+```sh
+tccutil reset Accessibility com.rex0220.rexTrackpad
+```
+
+### アンインストール
+
+1. メニューで「**ログイン時に起動**」をオフにし、「**終了**」を選びます。
+2. `/Applications/rexTrackpad.app` を削除します。
+3. 権限と設定を削除します。
+
+   ```sh
+   tccutil reset Accessibility com.rex0220.rexTrackpad
+   defaults delete com.rex0220.rexTrackpad
+   ```
 
 ## ビルド
 
@@ -106,6 +142,9 @@ xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Deb
 xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Release \
   -derivedDataPath build ONLY_ACTIVE_ARCH=NO
 open build/Build/Products/Release
+
+# GitHub 配布用の zip（アドホック署名、Universal）→ dist/
+scripts/release.sh
 ```
 
 ### コード署名
@@ -133,7 +172,10 @@ Apple の開発者アカウントがなくてもビルドできます。署名�
 ロックされています。`security unlock-keychain ~/Library/Keychains/login.keychain-db`
 で解除してください。
 
-配布する場合は、Developer ID 証明書で署名し、アーカイブして公証（notarize）してください。
+公開用のリリース版は `scripts/release.sh` でビルドします。個人の証明書がダウンロード版に
+入らないよう、常にアドホック署名にします。`v0.1.0` のようなタグを push すると、GitHub Actions
+がこのスクリプトを実行し、zip を Releases に公開します。公証済みの版を配布したい場合は、
+Developer ID 証明書で署名し、アーカイブして公証（notarize）してください。
 
 プロジェクトは Xcode 16 の同期フォルダーを使っています。`rexTrackpad/` や
 `rexTrackpadTests/` に `.swift` ファイルを置くだけで自動的に追加されます。

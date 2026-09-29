@@ -82,11 +82,47 @@ off while macOS uses them. Remap any gesture from **Gestures ›** in the menu.
 
 ## Installation
 
-There are no signed binary releases yet; build from source:
+1. Download `rexTrackpad-<version>.zip` from
+   [Releases](https://github.com/rex0220/rexTrackpad/releases), unzip it and move
+   `rexTrackpad.app` to `/Applications`.
+2. Open it. The app is **not notarized** (see below), so macOS blocks the first launch:
+   1. In the *“rexTrackpad” Not Opened* dialog, click **Done**.
+   2. Open System Settings › Privacy & Security, scroll to *Security* and click
+      **Open Anyway** next to the rexTrackpad message.
+   3. Click **Open Anyway** again and authenticate.
 
-1. Build a Release copy (see below) and move `rexTrackpad.app` to `/Applications`.
-2. Launch it. A hand icon appears in the menu bar (no Dock icon).
-3. Grant **Accessibility** when prompted (see [Permissions](#permissions)).
+   Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/rexTrackpad.app`
+3. A hand icon appears in the menu bar (no Dock icon). Allow **Accessibility** when
+   asked (see [Permissions](#permissions)).
+4. Optional: menu › **Launch at Login**.
+
+### Why is it not notarized?
+
+Notarized apps require a paid Apple Developer Program membership. Releases are
+ad-hoc signed instead and built by GitHub Actions from the tagged source
+(`scripts/release.sh`, `.github/workflows/release.yml`); each release includes a
+SHA-256 checksum. You can also [build it yourself](#build).
+
+### Updating
+
+Quit rexTrackpad, replace the app in `/Applications` and open it (you may need
+*Open Anyway* again). macOS treats every ad-hoc signed build as a new app, so
+reset and allow Accessibility again:
+
+```sh
+tccutil reset Accessibility com.rex0220.rexTrackpad
+```
+
+### Uninstalling
+
+1. Menu › turn off **Launch at Login**, then **Quit**.
+2. Delete `/Applications/rexTrackpad.app`.
+3. Remove the permission and settings:
+
+   ```sh
+   tccutil reset Accessibility com.rex0220.rexTrackpad
+   defaults delete com.rex0220.rexTrackpad
+   ```
 
 ## Build
 
@@ -106,6 +142,9 @@ xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Deb
 xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Release \
   -derivedDataPath build ONLY_ACTIVE_ARCH=NO
 open build/Build/Products/Release
+
+# Release zip for GitHub (ad-hoc signed, Universal) → dist/
+scripts/release.sh
 ```
 
 ### Code signing
@@ -131,7 +170,10 @@ Account ("Personal Team") is enough:
 If a command-line build fails with `errSecInternalComponent`, the keychain is
 locked: run `security unlock-keychain ~/Library/Keychains/login.keychain-db`.
 
-To distribute, sign with a Developer ID certificate, then archive and notarize.
+Public releases are built by `scripts/release.sh`, which always signs ad hoc so no
+personal certificate ends up in a download. Pushing a tag such as `v0.1.0` runs it
+on GitHub Actions and publishes the zip to Releases. To ship a notarized build
+instead, sign with a Developer ID certificate, then archive and notarize.
 
 The project uses Xcode 16 synchronized folders: new `.swift` files dropped into
 `rexTrackpad/` or `rexTrackpadTests/` are picked up automatically.

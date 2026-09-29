@@ -1,0 +1,41 @@
+name: Release
+
+# Push a tag such as v0.1.0 to build the zip and publish a GitHub release.
+# The tag must match MARKETING_VERSION (v0.1.0 ↔ 0.1.0).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the build number is the commit count
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build release zip
+        run: scripts/release.sh
+
+      - name: Check tag matches app version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [ ! -f "dist/rexTrackpad-${VERSION}.zip" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match MARKETING_VERSION:"
+            ls dist
+            exit 1
+          fi
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.sha256 \
+            --title "rexTrackpad ${GITHUB_REF_NAME}" \
+            --notes-file .github/release-notes.md
