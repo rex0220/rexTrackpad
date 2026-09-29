@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.2 — 2026-09-30
 
 ### Changed
 - 3-finger taps on the left / right side of the trackpad now switch to the previous /
