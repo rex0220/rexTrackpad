@@ -92,6 +92,8 @@ final class GestureRecognizer {
 
     private var session = Session()
     private var lastRecognitionTime: TimeInterval = -.infinity
+    /// A swipe recognised while fingers are still down; reported when they lift.
+    private var pendingSwipe: (gesture: TrackpadGesture, metrics: GestureMetrics)?
     private var lastFrameTime: TimeInterval?
     private var currentSwipeTranslation: CGVector?
 
@@ -111,6 +113,7 @@ final class GestureRecognizer {
         state = .idle
         session = Session()
         currentSwipeTranslation = nil
+        pendingSwipe = nil
     }
 
     func process(_ frame: TrackpadFrame) {
@@ -142,6 +145,11 @@ final class GestureRecognizer {
 
         case .recognized, .waitingForRelease:
             if contacts.isEmpty {
+                if let pending = pendingSwipe {
+                    pendingSwipe = nil
+                    lastRecognitionTime = time
+                    emit(.recognized(pending.gesture, pending.metrics))
+                }
                 state = .idle
             }
         }
@@ -306,6 +314,13 @@ final class GestureRecognizer {
 
     private func recognize(_ gesture: TrackpadGesture, metrics: GestureMetrics, at time: TimeInterval) {
         state = .recognized(gesture)
+        if case .swipe = gesture {
+            // Reported when the fingers lift. Keyboard shortcuts sent while fingers are
+            // still moving race with the trackpad's own events, and apps that read the
+            // live modifier state (Chrome's ⌃Tab) then drop them intermittently.
+            pendingSwipe = (gesture, metrics)
+            return
+        }
         lastRecognitionTime = time
         emit(.recognized(gesture, metrics))
     }

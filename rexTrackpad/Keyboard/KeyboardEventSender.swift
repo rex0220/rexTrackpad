@@ -37,7 +37,14 @@ struct KeystrokeResolver {
 /// Requires the Accessibility permission; without it macOS silently drops the
 /// events (callers check permission first and log instead).
 final class CGKeyboardEventSender: KeyboardEventSending {
+    /// Pause between the individual key events of one shortcut. Posting them in a
+    /// single burst lets some apps (Chrome's ⌃Tab) read the modifier state before the
+    /// modifier key-down has been applied, so the shortcut is only sometimes honoured.
+    static let interEventDelay: TimeInterval = 0.008
+
     private let resolver: KeystrokeResolver
+    /// Events are posted here so the pauses never block the main thread.
+    private let postingQueue = DispatchQueue(label: "com.rex0220.rexTrackpad.keyboard", qos: .userInteractive)
 
     init(keyCodes: KeyCodeResolving = KeyboardLayoutResolver()) {
         self.resolver = KeystrokeResolver(keyCodes: keyCodes)
@@ -45,21 +52,37 @@ final class CGKeyboardEventSender: KeyboardEventSending {
 
     @discardableResult
     func send(_ shortcut: KeyboardShortcut) -> Bool {
+        // Layout lookup uses Text Input Sources, so resolve on the caller's (main) thread.
         guard let stroke = resolver.resolve(shortcut) else {
             Log.keyboard.error("no key code for shortcut \(shortcut.description, privacy: .public)")
             return false
         }
-        // A private event source keeps physically held modifiers from leaking in.
-        guard let source = CGEventSource(stateID: .privateState),
-              let keyDown = CGEvent(keyboardEventSource: source, virtualKey: stroke.keyCode, keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: stroke.keyCode, keyDown: false) else {
-            Log.keyboard.error("failed to create keyboard events")
+        // The HID system state is what a real keyboard updates, so apps that query the
+        // live modifier state see the synthetic modifier keys too. Flags are set
+        // explicitly on every event, so physically held keys do not leak in.
+        guard let source = CGEventSource(stateID: .hidSystemState) else {
+            Log.keyboard.error("failed to create keyboard event source")
             return false
         }
-        keyDown.flags = stroke.flags
-        keyUp.flags = stroke.flags
-        keyDown.post(tap: .cghidEventTap)
-        keyUp.post(tap: .cghidEventTap)
+        // Create every event before posting any, so a failure can never leave a
+        // modifier key pressed.
+        var events: [CGEvent] = []
+        for step in stroke.eventSequence {
+            guard let event = CGEvent(keyboardEventSource: source, virtualKey: step.keyCode, keyDown: step.keyDown) else {
+                Log.keyboard.error("failed to create keyboard events")
+                return false
+            }
+            event.flags = step.flags
+            events.append(event)
+        }
+
+        let delay = useconds_t(Self.interEventDelay * 1_000_000)
+        postingQueue.async {
+            for (index, event) in events.enumerated() {
+                if index > 0 { usleep(delay) }
+                event.post(tap: .cghidEventTap)
+            }
+        }
 
         Log.keyboard.info("keyboard shortcut sent: \(shortcut.description, privacy: .public) (keyCode \(stroke.keyCode, privacy: .public))")
         return true

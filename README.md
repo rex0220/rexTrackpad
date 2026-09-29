@@ -220,9 +220,14 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
 - **Swipe**: finger count stable for 30 ms, average travel ≥ 0.20 (trackpad heights)
   within 0.6 s, dominant axis ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s,
   and every finger moving the same way (rejects pinch/rotate). Once a finger lifts,
-  no swipe can fire in that session.
+  no swipe can fire in that session. A recognised swipe **fires when the fingers
+  lift**: shortcuts sent while fingers are still moving race with the trackpad's
+  own events, and Chrome then intermittently ignored ⌃Tab.
 - A 0.35 s cooldown after each gesture plus a 0.2 s dispatcher debounce prevent
   double firing.
+- **Shortcuts are typed like a person would**: modifier keys down one by one, the
+  key down/up, modifiers up, with a few milliseconds between events. Some shortcuts
+  (Chrome's ⌃Tab) check the live modifier state rather than the key event's flags.
 
 Thresholds live in `GestureConfiguration` and can be tuned in *Gesture Settings…*.
 

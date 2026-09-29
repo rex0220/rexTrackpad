@@ -9,6 +9,11 @@ enum KeyCode {
     static let upArrow = CGKeyCode(kVK_UpArrow)
     static let downArrow = CGKeyCode(kVK_DownArrow)
 
+    static let control = CGKeyCode(kVK_Control)
+    static let option = CGKeyCode(kVK_Option)
+    static let shift = CGKeyCode(kVK_Shift)
+    static let command = CGKeyCode(kVK_Command)
+
     /// ANSI (US) positions, used only when the active layout cannot be queried.
     static let ansiFallback: [Character: CGKeyCode] = [
         "a": CGKeyCode(kVK_ANSI_A), "b": CGKeyCode(kVK_ANSI_B), "c": CGKeyCode(kVK_ANSI_C),

@@ -81,4 +81,43 @@ struct KeyboardShortcut: Hashable, Sendable, CustomStringConvertible {
 struct ResolvedKeystroke: Equatable, Sendable {
     let keyCode: CGKeyCode
     let flags: CGEventFlags
+
+    /// Modifier keys in the order a person presses them (⌃⌥⇧⌘).
+    private static let modifierKeys: [(flag: CGEventFlags, keyCode: CGKeyCode)] = [
+        (.maskControl, KeyCode.control),
+        (.maskAlternate, KeyCode.option),
+        (.maskShift, KeyCode.shift),
+        (.maskCommand, KeyCode.command),
+    ]
+
+    /// The key events a person typing this shortcut produces: modifiers down one by
+    /// one, the key down and up, then the modifiers up in reverse order.
+    ///
+    /// Setting flags on the key event alone is not enough: some shortcuts (e.g.
+    /// Chrome's ⌃Tab) check the live modifier state, which only changes when the
+    /// modifier keys themselves are pressed.
+    var eventSequence: [KeyEventStep] {
+        let modifiers = Self.modifierKeys.filter { flags.contains($0.flag) }
+        var held: CGEventFlags = []
+        var steps: [KeyEventStep] = []
+
+        for modifier in modifiers {
+            held.insert(modifier.flag)
+            steps.append(KeyEventStep(keyCode: modifier.keyCode, keyDown: true, flags: held))
+        }
+        steps.append(KeyEventStep(keyCode: keyCode, keyDown: true, flags: flags))
+        steps.append(KeyEventStep(keyCode: keyCode, keyDown: false, flags: flags))
+        for modifier in modifiers.reversed() {
+            held.remove(modifier.flag)
+            steps.append(KeyEventStep(keyCode: modifier.keyCode, keyDown: false, flags: held))
+        }
+        return steps
+    }
+}
+
+/// One synthetic key-down or key-up event.
+struct KeyEventStep: Equatable, Sendable {
+    let keyCode: CGKeyCode
+    let keyDown: Bool
+    let flags: CGEventFlags
 }

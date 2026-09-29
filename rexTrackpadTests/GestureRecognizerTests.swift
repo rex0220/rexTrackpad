@@ -135,6 +135,21 @@ final class GestureRecognizerTests: XCTestCase {
         XCTAssertEqual(recognizer.state, .idle)
     }
 
+    func testSwipeIsReportedOnlyWhenFingersLift() {
+        var t: TimeInterval = 0
+        for i in 0...30 {
+            send(t, fingers(3, x: 0.2 + CGFloat(i) * 0.01))
+            t += frameInterval
+        }
+        // Recognised while moving, but not reported until every finger is up.
+        XCTAssertEqual(recognizer.state, .recognized(.threeFingerSwipeRight))
+        XCTAssertTrue(recognized.isEmpty)
+
+        send(t, [])
+        XCTAssertEqual(recognized, [.threeFingerSwipeRight])
+        XCTAssertEqual(recognizer.state, .idle)
+    }
+
     func testSwipeDirections() {
         swipe(fingers: 3, dx: -0.01, dy: 0, frames: 30, start: 0)
         swipe(fingers: 3, dx: 0, dy: 0.015, frames: 30, start: 2)

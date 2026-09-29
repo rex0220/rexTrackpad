@@ -96,4 +96,25 @@ final class MappingAndResolverTests: XCTestCase {
 
         XCTAssertNil(resolver.resolve(KeyboardShortcut(.character("q"), [.command])))
     }
+
+    func testEventSequencePressesModifiersLikeAPerson() {
+        // ⌃⇧⇥ (previous tab): ⌃ down, ⇧ down, ⇥ down/up, ⇧ up, ⌃ up.
+        let stroke = ResolvedKeystroke(keyCode: KeyCode.tab, flags: [.maskControl, .maskShift])
+        XCTAssertEqual(stroke.eventSequence, [
+            KeyEventStep(keyCode: KeyCode.control, keyDown: true, flags: .maskControl),
+            KeyEventStep(keyCode: KeyCode.shift, keyDown: true, flags: [.maskControl, .maskShift]),
+            KeyEventStep(keyCode: KeyCode.tab, keyDown: true, flags: [.maskControl, .maskShift]),
+            KeyEventStep(keyCode: KeyCode.tab, keyDown: false, flags: [.maskControl, .maskShift]),
+            KeyEventStep(keyCode: KeyCode.shift, keyDown: false, flags: .maskControl),
+            KeyEventStep(keyCode: KeyCode.control, keyDown: false, flags: []),
+        ])
+
+        // Arrow-key flags stay on the arrow key only; every modifier is released.
+        let arrow = ResolvedKeystroke(keyCode: KeyCode.rightArrow, flags: [.maskCommand, .maskAlternate, .maskSecondaryFn, .maskNumericPad])
+        let steps = arrow.eventSequence
+        XCTAssertEqual(steps.count, 6)
+        XCTAssertEqual(steps[2].flags, arrow.flags)
+        XCTAssertEqual(steps.last, KeyEventStep(keyCode: KeyCode.option, keyDown: false, flags: []))
+        XCTAssertEqual(steps.filter(\.keyDown).count, steps.filter { !$0.keyDown }.count)
+    }
 }
