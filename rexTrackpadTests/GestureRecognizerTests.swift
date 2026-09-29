@@ -150,6 +150,55 @@ final class GestureRecognizerTests: XCTestCase {
         XCTAssertEqual(recognizer.state, .idle)
     }
 
+    func testQuickSwipeWithStaggeredLandingIsRecognized() {
+        // Real hardware: fingers land ~30 ms apart and a short vertical swipe is
+        // mostly done before the last finger settles (0.2 s, ~0.24 travel).
+        let landing: [Int: TimeInterval] = [1: 0.00, 2: 0.03, 3: 0.06]
+        let speed: CGFloat = 1.2 // trackpad heights per second
+        var t: TimeInterval = 0
+        while t <= 0.20 {
+            let points = landing.filter { $0.value <= t }.sorted { $0.key < $1.key }.map { id, _ in
+                (id, 0.3 + CGFloat(id) * 0.1, 0.3 + speed * CGFloat(t))
+            }
+            send(t, points)
+            t += frameInterval
+        }
+        send(t, [])
+        XCTAssertEqual(recognized, [.threeFingerSwipeUp])
+    }
+
+    func testFlickCompletedWhileLiftingIsRecognized() {
+        // A short flick: one finger lifts before the swipe distance is reached while
+        // all three touch, and the rest of the movement happens while lifting.
+        let speed: CGFloat = 1.5
+        var t: TimeInterval = 0
+        while t <= 0.15 {
+            let y = 0.3 + speed * CGFloat(max(0, t - 0.03))
+            var points: [(Int, CGFloat, CGFloat)] = [(1, 0.3, y), (2, 0.4, y)]
+            if t < 0.10 { points.append((3, 0.5, y)) }
+            send(t, points)
+            t += frameInterval
+        }
+        XCTAssertTrue(recognized.isEmpty)
+        send(t, [])
+        XCTAssertEqual(recognized, [.threeFingerSwipeUp])
+    }
+
+    func testThirdFingerJoiningAScrollDoesNotSwipe() {
+        // Two-finger scroll upwards, then a third finger rests on the trackpad.
+        var t: TimeInterval = 0
+        for i in 0...40 {
+            send(t, [(1, 0.4, 0.2 + CGFloat(i) * 0.01), (2, 0.5, 0.2 + CGFloat(i) * 0.01)])
+            t += frameInterval
+        }
+        for _ in 0...20 {
+            send(t, [(1, 0.4, 0.6), (2, 0.5, 0.6), (3, 0.6, 0.6)])
+            t += frameInterval
+        }
+        send(t, [])
+        XCTAssertTrue(recognized.isEmpty)
+    }
+
     func testSwipeDirections() {
         swipe(fingers: 3, dx: -0.01, dy: 0, frames: 30, start: 0)
         swipe(fingers: 3, dx: 0, dy: 0.015, frames: 30, start: 2)

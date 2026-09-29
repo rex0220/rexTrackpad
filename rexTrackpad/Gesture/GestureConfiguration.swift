@@ -31,7 +31,7 @@ struct GestureConfiguration: Equatable, Sendable {
     /// The finger count must be unchanged this long before a swipe anchor is taken.
     var settleTime: TimeInterval = 0.03
     /// Average finger travel required.
-    var swipeMinimumDistance: Double = 0.20
+    var swipeMinimumDistance: Double = 0.12
     /// `swipeMinimumDistance` must be covered within this window (slow drags never count).
     var swipeMaximumDuration: TimeInterval = 0.60
     /// Average speed required.

@@ -84,6 +84,8 @@ final class GestureRecognizer {
         var countStableSince: TimeInterval = 0
         var landingTimes: [Int: TimeInterval] = [:]
         var origins: [Int: CGPoint] = [:]
+        /// Last position of every finger while it was touching.
+        var lastPositions: [Int: CGPoint] = [:]
         var maxMovement: Double = 0
         var clickDetected = false
         var fingerLifted = false
@@ -186,6 +188,7 @@ final class GestureRecognizer {
 
         // Per-finger bookkeeping for tap evaluation.
         for contact in contacts {
+            session.lastPositions[contact.id] = contact.position
             if let origin = session.origins[contact.id] {
                 session.maxMovement = max(session.maxMovement, scaledDistance(from: origin, to: contact.position))
             } else {
@@ -220,53 +223,87 @@ final class GestureRecognizer {
             session.anchor = nil // a finger was replaced; start over
         }
 
-        guard let anchor = session.anchor else {
-            if time - session.countStableSince >= configuration.settleTime {
-                session.anchor = Anchor(time: time, positions: currentPositions)
-            }
-            return
+        let anchor: Anchor
+        if let existing = session.anchor {
+            anchor = existing
+        } else {
+            guard time - session.countStableSince >= configuration.settleTime else { return }
+            anchor = makeAnchor(for: currentPositions, at: time)
+            session.anchor = anchor
         }
 
         evaluateSwipe(anchor: anchor, positions: currentPositions, fingers: count, at: time)
     }
 
+    /// Where swipe travel is measured from.
+    ///
+    /// Fingers land one after another, and a short, quick swipe is largely over by the
+    /// time the last finger has settled. So when all fingers landed together (within
+    /// `tapMaximumLandingSpread`), travel is measured from each finger's landing point.
+    /// When a finger joined later — e.g. a third finger added to a two-finger scroll —
+    /// the current positions are used, so earlier movement cannot trigger a swipe.
+    private func makeAnchor(for positions: [Int: CGPoint], at time: TimeInterval) -> Anchor {
+        let landings = positions.keys.compactMap { session.landingTimes[$0] }
+        let origins = positions.keys.compactMap { id in session.origins[id].map { (id, $0) } }
+        guard landings.count == positions.count, origins.count == positions.count,
+              let first = landings.min(), let last = landings.max(),
+              last - first <= configuration.tapMaximumLandingSpread else {
+            return Anchor(time: time, positions: positions)
+        }
+        return Anchor(time: first, positions: Dictionary(uniqueKeysWithValues: origins))
+    }
+
     private func evaluateSwipe(anchor: Anchor, positions: [Int: CGPoint], fingers: Int, at time: TimeInterval) {
-        var displacements: [CGVector] = []
-        displacements.reserveCapacity(positions.count)
-        for (id, position) in positions {
-            guard let origin = anchor.positions[id] else { continue }
-            displacements.append(scaledDelta(from: origin, to: position))
+        let displacements = positions.compactMap { id, position in
+            anchor.positions[id].map { scaledDelta(from: $0, to: position) }
         }
         guard !displacements.isEmpty else { return }
 
+        let elapsed = time - anchor.time
+        let (verdict, candidate) = swipeVerdict(displacements, fingers: fingers, elapsed: elapsed)
+        currentSwipeTranslation = candidate.translation
+
+        switch verdict {
+        case .tooShort:
+            // Sliding window: slow drift never accumulates into a swipe.
+            if elapsed > configuration.swipeMaximumDuration {
+                session.anchor = Anchor(time: time, positions: positions)
+            }
+        case .rejected(let reason):
+            reject(reason, metrics: candidate)
+        case .recognized(let direction):
+            recognize(.swipe(fingers: fingers, direction: direction), metrics: candidate, at: time)
+        }
+    }
+
+    private enum SwipeVerdict {
+        case tooShort
+        case rejected(GestureRejection)
+        case recognized(SwipeDirection)
+    }
+
+    /// Applies the swipe rules (distance, direction, speed, finger agreement) to the
+    /// per-finger displacements of one candidate.
+    private func swipeVerdict(_ displacements: [CGVector], fingers: Int, elapsed: TimeInterval) -> (SwipeVerdict, GestureMetrics) {
         let n = CGFloat(displacements.count)
         let mean = CGVector(
             dx: displacements.reduce(0) { $0 + $1.dx } / n,
             dy: displacements.reduce(0) { $0 + $1.dy } / n
         )
-        currentSwipeTranslation = mean
-
-        let elapsed = time - anchor.time
         let candidate = GestureMetrics(fingers: fingers, duration: elapsed, translation: mean, maxFingerMovement: session.maxMovement)
         let distance = candidate.distance
 
         guard distance >= configuration.swipeMinimumDistance else {
-            // Sliding window: slow drift never accumulates into a swipe.
-            if elapsed > configuration.swipeMaximumDuration {
-                session.anchor = Anchor(time: time, positions: positions)
-            }
-            return
+            return (.tooShort, candidate)
         }
 
         let absX = Double(abs(mean.dx))
         let absY = Double(abs(mean.dy))
         guard max(absX, absY) >= configuration.swipeDirectionRatio * min(absX, absY) else {
-            reject(.diagonalSwipe, metrics: candidate)
-            return
+            return (.rejected(.diagonalSwipe), candidate)
         }
         guard candidate.velocity >= configuration.swipeMinimumVelocity else {
-            reject(.swipeTooSlow, metrics: candidate)
-            return
+            return (.rejected(.swipeTooSlow), candidate)
         }
 
         let direction: SwipeDirection = absX >= absY
@@ -276,12 +313,30 @@ final class GestureRecognizer {
         for displacement in displacements {
             let projection = Double(displacement.dx * axis.dx + displacement.dy * axis.dy)
             if projection < configuration.swipeFingerAgreement * distance {
-                reject(.inconsistentFingers, metrics: candidate)
-                return
+                return (.rejected(.inconsistentFingers), candidate)
             }
         }
+        return (.recognized(direction), candidate)
+    }
 
-        recognize(.swipe(fingers: fingers, direction: direction), metrics: candidate, at: time)
+    /// A quick flick often reaches swipe distance only while the fingers are already
+    /// lifting, after live evaluation has stopped. When every finger landed together,
+    /// the whole path (landing point → last touching position) is judged once more
+    /// with the same rules.
+    private func swipeAtRelease(fingers: Int, at time: TimeInterval) -> (SwipeVerdict, GestureMetrics)? {
+        guard fingers <= configuration.maximumFingers,
+              session.landingTimes.count == fingers,
+              landingSpread() <= configuration.tapMaximumLandingSpread,
+              let firstLanding = session.landingTimes.values.min() else { return nil }
+
+        let elapsed = time - firstLanding
+        guard elapsed <= configuration.swipeMaximumDuration else { return nil }
+
+        let displacements = session.origins.compactMap { id, origin in
+            session.lastPositions[id].map { scaledDelta(from: origin, to: $0) }
+        }
+        guard displacements.count == fingers else { return nil }
+        return swipeVerdict(displacements, fingers: fingers, elapsed: elapsed)
     }
 
     private func finishSession(at time: TimeInterval) {
@@ -294,6 +349,22 @@ final class GestureRecognizer {
 
         let duration = time - session.startTime
         let candidate = metrics(fingers: fingers, duration: duration)
+
+        if !session.clickDetected, session.maxMovement > configuration.tapMaximumMovement,
+           let (verdict, swipeMetrics) = swipeAtRelease(fingers: fingers, at: time) {
+            switch verdict {
+            case .recognized(let direction):
+                // The fingers are already up, so report right away.
+                lastRecognitionTime = time
+                emit(.recognized(.swipe(fingers: fingers, direction: direction), swipeMetrics))
+                return
+            case .rejected(let reason):
+                reject(reason, metrics: swipeMetrics)
+                return
+            case .tooShort:
+                break // judged as a (moved) tap below
+            }
+        }
 
         if session.clickDetected {
             reject(.physicalClick, metrics: candidate)

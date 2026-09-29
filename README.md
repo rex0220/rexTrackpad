@@ -217,12 +217,18 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   most one gesture** (`idle → tracking → recognized / waitingForRelease → idle`).
 - **Tap**: max finger count ≥ 3, all fingers land within 0.15 s, whole tap ≤ 0.35 s,
   no finger moves more than 0.05, and no physical click happened.
-- **Swipe**: finger count stable for 30 ms, average travel ≥ 0.20 (trackpad heights)
-  within 0.6 s, dominant axis ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s,
-  and every finger moving the same way (rejects pinch/rotate). Once a finger lifts,
-  no swipe can fire in that session. A recognised swipe **fires when the fingers
-  lift**: shortcuts sent while fingers are still moving race with the trackpad's
-  own events, and Chrome then intermittently ignored ⌃Tab.
+- **Swipe**: average travel ≥ 0.12 (trackpad heights) within 0.6 s, dominant axis
+  ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s, and every finger moving the
+  same way (rejects pinch/rotate).
+  - When all fingers land together (within 0.15 s), travel is measured from each
+    finger's landing point, and a short flick is judged once more when the fingers
+    lift (landing point → last touching position). Fingers land ~30 ms apart, so a
+    quick vertical flick is mostly over before the last finger settles.
+  - When a finger joins later (e.g. a third finger added to a two-finger scroll),
+    travel is only measured from that moment.
+  - A recognised swipe **fires when the fingers lift**: shortcuts sent while fingers
+    are still moving race with the trackpad's own events, and Chrome then
+    intermittently ignored ⌃Tab.
 - A 0.35 s cooldown after each gesture plus a 0.2 s dispatcher debounce prevent
   double firing.
 - **Shortcuts are typed like a person would**: modifier keys down one by one, the
