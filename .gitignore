@@ -38,3 +38,6 @@ Package.resolved
 .idea/
 *.swp
 *~
+
+# Local code signing override (see Config/Signing.xcconfig)
+Config/Signing.local.xcconfig

@@ -105,8 +105,27 @@ xcodebuild -project rexTrackpad.xcodeproj -scheme rexTrackpad -configuration Rel
 open build/Build/Products/Release
 ```
 
-The project signs "to run locally" (ad hoc). To distribute, set your
-Development Team in *Signing & Capabilities*, then archive and notarize.
+### Code signing
+
+By default the project signs "to run locally" (ad hoc), so it builds without an
+Apple developer account. Signing settings live in `Config/Signing.xcconfig`.
+
+Ad-hoc signatures change on every build, and macOS then drops the Accessibility
+permission (see [Permissions](#permissions)). To keep the permission across
+rebuilds, sign with your own **Apple Development** certificate. A free Apple
+Account ("Personal Team") is enough:
+
+1. Xcode › Settings › Accounts › **+** › sign in with your Apple Account.
+2. Create the local override (git-ignored) and put your Team ID in it:
+
+   ```sh
+   cp Config/Signing.local.xcconfig.example Config/Signing.local.xcconfig
+   ```
+
+3. Build once with `-allowProvisioningUpdates` (or from Xcode) so the
+   certificate is created, then grant Accessibility one last time.
+
+To distribute, sign with a Developer ID certificate, then archive and notarize.
 
 The project uses Xcode 16 synchronized folders: new `.swift` files dropped into
 `rexTrackpad/` or `rexTrackpadTests/` are picked up automatically.
@@ -127,7 +146,8 @@ no shortcut is sent.
 
 > **Rebuilding:** ad-hoc signed builds get a new code signature every build, and
 > macOS ties the Accessibility grant to it. If gestures stop working after a
-> rebuild, remove rexTrackpad from *Privacy & Security › Accessibility* and add it again.
+> rebuild, run `tccutil reset Accessibility com.rex0220.rexTrackpad`, relaunch the
+> app and allow it again — or set up [Apple Development signing](#code-signing) once.
 
 ## Launch at Login
 

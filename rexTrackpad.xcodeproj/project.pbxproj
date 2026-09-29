@@ -19,6 +19,7 @@
 /* Begin PBXFileReference section */
 		B365B536DAF28180B325FC48 /* rexTrackpad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rexTrackpad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		81EC2F8DC3F783BDF80EDBF2 /* rexTrackpadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = rexTrackpadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C0FF1C0000000000000001 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,8 +58,17 @@
 			children = (
 				88E848D06B6824756B7D908F /* rexTrackpad */,
 				1F0BA94FD34E90CD83C4E4C2 /* rexTrackpadTests */,
+				A1C0FF1C0000000000000002 /* Config */,
 				7F5B85BF6153DC0B747916ED /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		A1C0FF1C0000000000000002 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A1C0FF1C0000000000000001 /* Signing.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		7F5B85BF6153DC0B747916ED /* Products */ = {
@@ -298,12 +308,10 @@
 		};
 		437A7057A70DED9D4129A941 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FF1C0000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -325,12 +333,10 @@
 		};
 		FB66AFC86552A79C13CF901C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FF1C0000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -352,12 +358,10 @@
 		};
 		A91E8264DCD7152870883BA3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FF1C0000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1.0;
@@ -370,12 +374,10 @@
 		};
 		545EC6154F06E05E540AF514 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C0FF1C0000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1.0;

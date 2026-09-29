@@ -1,0 +1,11 @@
+// Local signing override (copy to Signing.local.xcconfig; that file is git-ignored).
+//
+// Find your Team ID in Xcode › Settings › Accounts (select the team), or run:
+//     security find-identity -p codesigning -v
+// and read the OU of the "Apple Development" certificate.
+//
+// A free Apple Account ("Personal Team") is enough for local development.
+
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
