@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.3 — 2026-09-30
 
 ### Changed
 - The note in Settings › Permissions now explains what to do after an update (remove
