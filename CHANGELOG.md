@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Gesture feedback**: when a gesture sends an action to the browser, a small,
+  slightly translucent symbol for the action appears near the pointer for about
+  0.7 s. It never takes focus, lets clicks through and is shown after the shortcut
+  is sent, so it does not delay the action. Turn it off in Settings › Assignments.
+
+### Fixed
+- The Close button of the settings window was cut off on some screens.
+
+### 日本語
+- **追加**: ジェスチャーが効いたことの表示。ブラウザーに操作を送ると、ポインターの近くに操作を
+  表す半透明の小さな記号が約 0.7 秒表示されます。フォーカスを奪わず、クリックも素通りし、
+  操作を送った後に表示するので操作は遅くなりません。設定の「割り当て」タブでオフにできます。
+- **修正**: 画面によって、設定ウィンドウの「閉じる」ボタンがはみ出していた問題を直しました。
+
 ## 0.3.3 — 2026-09-30
 
 ### Changed

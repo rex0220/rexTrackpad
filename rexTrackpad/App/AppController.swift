@@ -24,6 +24,8 @@ final class AppController {
     /// Called on the main thread whenever the trackpad input state changes.
     var onTrackpadStateChange: ((TrackpadInputState) -> Void)?
 
+    private let feedback = GestureFeedbackPresenter()
+
     private var settingsObserver: NSObjectProtocol?
 
     init(settings: SettingsStore = SettingsStore()) {
@@ -108,6 +110,10 @@ final class AppController {
             return
         }
         let outcome = dispatcher.dispatch(gesture)
+        // Shown only after the shortcut was sent, so it never delays the action.
+        if case .sent(_, let action, _) = outcome, settings.showsGestureFeedback {
+            feedback.show(.browser(action))
+        }
         #if DEBUG
         debugMonitor.note("\(gesture.displayName) → \(outcome)")
         #endif

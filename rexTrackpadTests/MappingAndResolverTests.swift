@@ -138,6 +138,22 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertNil(resolver.resolve(KeyboardShortcut(.character("q"), [.command])))
     }
 
+    func testEveryActionHasAFeedbackSymbol() {
+        for action in BrowserAction.allCases {
+            XCTAssertNotNil(NSImage(systemSymbolName: action.feedbackSymbol, accessibilityDescription: nil), "\(action)")
+        }
+    }
+
+    func testFeedbackIsOnByDefault() throws {
+        let suite = "rexTrackpadTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let settings = SettingsStore(defaults: defaults)
+        XCTAssertTrue(settings.showsGestureFeedback)
+        settings.showsGestureFeedback = false
+        XCTAssertFalse(SettingsStore(defaults: defaults).showsGestureFeedback)
+    }
+
     func testModifierStepsForAClick() {
         // ⌘⇧-click: ⇧ then ⌘ down (⌃⌥⇧⌘ order), released in reverse.
         let flags: CGEventFlags = [.maskCommand, .maskShift]

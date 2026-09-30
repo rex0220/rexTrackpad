@@ -69,8 +69,9 @@ struct SettingsView: View {
             )
         }
         .padding(12)
-        // Same size for every tab, so switching tabs does not resize the window.
-        .frame(width: 560, height: 645, alignment: .top)
+        // Same size for every tab, so switching tabs does not resize the window. The
+        // height includes the tab picker (≈ 50 pt) on top of the Assignments list.
+        .frame(width: 560, height: 700, alignment: .top)
     }
 
     /// Tab contents start at the top instead of being centred vertically.
@@ -143,6 +144,7 @@ struct SettingsView: View {
             }
 
             Toggle("Avoid macOS gesture conflicts", isOn: binding(\.avoidsSystemGestureConflicts))
+            Toggle("Show a symbol near the pointer when a gesture works", isOn: binding(\.showsGestureFeedback))
 
             HStack {
                 Spacer()

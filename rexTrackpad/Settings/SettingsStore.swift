@@ -23,6 +23,7 @@ final class SettingsStore: ObservableObject {
         static let launchAtLogin = "LaunchAtLogin"
         static let gestureMappings = "GestureMappings"
         static let avoidSystemGestureConflicts = "AvoidSystemGestureConflicts"
+        static let showsGestureFeedback = "ShowGestureFeedback"
         static let gestureConfiguration = "GestureConfiguration"
         static let didShowWelcome = "DidShowPermissionsOnFirstLaunch"
 
@@ -43,6 +44,7 @@ final class SettingsStore: ObservableObject {
             Key.enabled: true,
             Key.launchAtLogin: false,
             Key.avoidSystemGestureConflicts: true,
+            Key.showsGestureFeedback: true,
             Key.didShowWelcome: false,
         ]
         for browser in Browser.allCases {
@@ -66,6 +68,12 @@ final class SettingsStore: ObservableObject {
     var avoidsSystemGestureConflicts: Bool {
         get { defaults.bool(forKey: Key.avoidSystemGestureConflicts) }
         set { set(newValue, forKey: Key.avoidSystemGestureConflicts) }
+    }
+
+    /// Show a symbol near the pointer when a gesture worked.
+    var showsGestureFeedback: Bool {
+        get { defaults.bool(forKey: Key.showsGestureFeedback) }
+        set { set(newValue, forKey: Key.showsGestureFeedback) }
     }
 
     var didShowWelcome: Bool {

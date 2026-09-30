@@ -27,6 +27,7 @@ clicking, scrolling and macOS gestures keep working.
 - Reopen the last closed tab
 - Per-browser enable / disable
 - Assign any action to any gesture in one settings window
+- A small, translucent symbol near the pointer confirms each gesture (can be turned off)
 - Automatic protection against collisions with macOS system gestures
 - Launch at Login (`SMAppService`)
 - Debug Monitor (Debug builds) showing live touches, direction, distance and duration
@@ -102,7 +103,7 @@ The settings window has four tabs and closes with **Close**, esc or ⌘W:
 
 | Tab | Contents |
 |---|---|
-| **Assignments** | One pop-up per gesture. Gestures that macOS also uses are marked *Also used by macOS* (hover for the macOS feature); the *Avoid macOS gesture conflicts* switch and *Restore Default Gestures* are here too. |
+| **Assignments** | One pop-up per gesture. Gestures that macOS also uses are marked *Also used by macOS* (hover for the macOS feature); the *Avoid macOS gesture conflicts* and *Show a symbol near the pointer when a gesture works* switches and *Restore Default Gestures* are here too. |
 | **Sensitivity** | Tap, swipe and repeat-protection thresholds. |
 | **Browsers** | Turn gestures on / off per browser; browsers that are not installed are marked. |
 | **Permissions** | Accessibility / Input Monitoring status and whether touch frames arrive. |

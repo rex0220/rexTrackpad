@@ -750,6 +750,16 @@
         }
       }
     },
+    "Show a symbol near the pointer when a gesture works": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ジェスチャーが効いたら、ポインターの近くに記号を表示"
+          }
+        }
+      }
+    },
     "Side zone width": {
       "localizations": {
         "ja": {
