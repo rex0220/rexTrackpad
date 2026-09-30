@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-09-30
 
 ### Added
 - **Gesture feedback**: when a gesture sends an action to the browser, a small,
