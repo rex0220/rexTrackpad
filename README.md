@@ -11,6 +11,8 @@ clicking, scrolling and macOS gestures keep working.
 
 > Status: v0.4 (early development). See [CHANGELOG](CHANGELOG.md).
 
+📘 **Introduction article (Japanese, with screenshots)**: [Qiita](https://qiita.com/rex0220/items/48411ca049dc6f3fc5e9)
+
 ## Features
 
 - Browser reload

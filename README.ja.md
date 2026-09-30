@@ -11,6 +11,8 @@ Microsoft Edge・Firefox のブラウザー操作に変換する、小さなメ�
 
 > 状態: v0.4（初期開発版）。変更履歴は [CHANGELOG](CHANGELOG.md) を参照してください。
 
+📘 **紹介記事（使い方・インストール手順）**: [Magic Trackpad でブラウザーを操作する Mac アプリ「rexTrackpad」のご紹介（Qiita）](https://qiita.com/rex0220/items/48411ca049dc6f3fc5e9)
+
 ## 機能
 
 - ページの再読み込み
