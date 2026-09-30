@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- The note in Settings › Permissions now explains what to do after an update (remove
+  rexTrackpad from the Accessibility list, open it again and allow it), instead of a
+  developer note about rebuilding.
+
+### 日本語
+- **変更**: 設定の「権限」タブの注意書きを、アップデートしたときの対処（アクセシビリティの一覧から
+  削除して、rexTrackpad を開き直して許可し直す）に書き換えました。
+
 ## 0.3.2 — 2026-09-30
 
 ### Changed

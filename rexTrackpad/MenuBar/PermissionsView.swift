@@ -91,7 +91,7 @@ struct PermissionsView: View {
                 EmptyView()
             }
 
-            Text("After rebuilding the app, macOS may treat it as a new app. If gestures stop working, remove rexTrackpad from the Accessibility list and add it again.")
+            Text("After an update, macOS may treat rexTrackpad as a new app, and gestures stop working. If that happens, remove rexTrackpad from the Accessibility list (−), then open rexTrackpad again and allow it once more.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

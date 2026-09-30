@@ -94,12 +94,12 @@
         }
       }
     },
-    "After rebuilding the app, macOS may treat it as a new app. If gestures stop working, remove rexTrackpad from the Accessibility list and add it again.": {
+    "After an update, macOS may treat rexTrackpad as a new app, and gestures stop working. If that happens, remove rexTrackpad from the Accessibility list (−), then open rexTrackpad again and allow it once more.": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "アプリをビルドし直すと、macOS が別のアプリとして扱うことがあります。ジェスチャーが効かなくなったら、アクセシビリティの一覧から rexTrackpad を削除して追加し直してください。"
+            "value": "アップデートすると、macOS が rexTrackpad を別のアプリとして扱い、ジェスチャーが効かなくなることがあります。その場合は、アクセシビリティの一覧から rexTrackpad を削除（−）してから rexTrackpad を開き直し、もう一度許可してください。"
           }
         }
       }
