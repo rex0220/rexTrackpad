@@ -16,29 +16,21 @@ protocol PointerEventSending {
 /// Posts synthetic mouse clicks with Core Graphics (requires Accessibility, like the
 /// keyboard sender).
 ///
-/// Only window owners and bounds are read from the window list — never window
-/// titles or contents.
+/// Only the owner of the window under the pointer is read — never window titles or
+/// contents.
 final class CGPointerEventSender: PointerEventSending {
     private let postingQueue = DispatchQueue(label: "com.rex0220.rexTrackpad.pointer", qos: .userInteractive)
 
+    /// Main thread only (AppKit).
     func isPointerOverWindow(ofProcess processIdentifier: pid_t) -> Bool {
-        guard let location = CGEvent(source: nil)?.location,
-              let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
-                as? [[String: Any]] else { return false }
-
-        // The list is ordered front to back; the first visible window under the
-        // pointer is the one a click would reach.
-        for window in windows {
-            guard let boundsInfo = window[kCGWindowBounds as String] as? NSDictionary,
-                  let bounds = CGRect(dictionaryRepresentation: boundsInfo),
-                  bounds.contains(location) else { continue }
-            if let alpha = (window[kCGWindowAlpha as String] as? NSNumber)?.doubleValue, alpha <= 0 {
-                continue
-            }
-            let owner = (window[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value
-            return owner == processIdentifier
-        }
-        return false
+        // Ask the window server which window a click would reach. Comparing window
+        // bounds instead is not enough: Notification Center keeps a transparent,
+        // click-through window over the whole screen, and it would always be "on top".
+        let number = NSWindow.windowNumber(at: NSEvent.mouseLocation, belowWindowWithWindowNumber: 0)
+        guard number > 0,
+              let info = CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(number)) as? [[String: Any]],
+              let owner = (info.first?[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value else { return false }
+        return owner == processIdentifier
     }
 
     @discardableResult

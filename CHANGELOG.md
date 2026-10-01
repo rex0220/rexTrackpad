@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- **Open Link in New Tab** sometimes did nothing even with the pointer over the
+  browser: Notification Center's transparent, click-through window was mistaken for
+  the window under the pointer. rexTrackpad now asks the window server which window
+  a click would reach.
+
+### Changed
+- The README now explains that the symbol shown for Open Link in New Tab means the
+  click was sent; it also appears where there is no link (the browser then does
+  nothing).
+
+### 日本語
+- **修正**: ポインターがブラウザーの上にあっても「リンクを新しいタブで開く」が効かないことが
+  ありました。通知センターが置いている、クリックを素通りさせる透明なウィンドウを、ポインターの
+  下のウィンドウと誤判定していたためです。クリックが実際に届くウィンドウをウィンドウサーバーに
+  問い合わせるようにしました。
+- **変更**: 「リンクを新しいタブで開く」で表示される記号は「クリックを送った」ことを表し、リンクの
+  ない場所でも表示される（ブラウザー側では何も起きない）ことを README に書きました。
+
 ## 0.4.0 — 2026-09-30
 
 ### Added

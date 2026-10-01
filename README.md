@@ -290,7 +290,10 @@ tabs, Safari's sidebar).
 link opens in a new tab that becomes active. rexTrackpad never reads page content,
 so it cannot tell whether a link is under the pointer; the click is only sent when
 the pointer is over a window of the frontmost browser (never onto the menu bar,
-the Dock or another app). Only window owners and bounds are read for this check.
+the Dock or another app). Only the owner of the window under the pointer is read
+for this check. The symbol near the pointer therefore means the click was sent, not
+that a link opened: over a spot without a link it still appears, and the browser
+simply does nothing.
 
 ## Architecture
 
