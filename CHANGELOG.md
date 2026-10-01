@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.1 — 2026-10-01
 
 ### Fixed
 - **Open Link in New Tab** sometimes did nothing even with the pointer over the
