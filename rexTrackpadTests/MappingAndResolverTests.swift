@@ -12,7 +12,8 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertNil(TrackpadGesture(identifier: "pinch.4"))
         XCTAssertNil(TrackpadGesture(identifier: "swipe.3.sideways"))
         XCTAssertEqual(TrackpadGesture(identifier: "tap.3.left"), .threeFingerTapLeft)
-        XCTAssertNil(TrackpadGesture(identifier: "tap.3.top"))
+        XCTAssertEqual(TrackpadGesture(identifier: "tap.3.topLeft"), .threeFingerTapTopLeft)
+        XCTAssertNil(TrackpadGesture(identifier: "tap.3.centre"))
         XCTAssertEqual(TrackpadGesture(identifier: "circle.3.clockwise"), .threeFingerCircleClockwise)
         XCTAssertNil(TrackpadGesture(identifier: "circle.3.sideways"))
     }
@@ -31,6 +32,11 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .threeFingerTap), .browser(.reload))
         XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .threeFingerTapRight), .browser(.nextTab))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapTop), .browser(.scrollToTop))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapBottom), .browser(.reload))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapBottomLeft), .browser(.pageUp))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapBottomRight), .browser(.pageDown))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapTopLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .fourFingerTap), .browser(.openLinkInNewTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeLeft), .browser(.previousTab))
         XCTAssertEqual(mapping.action(for: .threeFingerSwipeRight), .browser(.nextTab))
@@ -40,8 +46,8 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .fourFingerSwipeRight), .browser(.forward))
         XCTAssertEqual(mapping.action(for: .threeFingerCircleClockwise), .browser(.reopenClosedTab))
         XCTAssertEqual(mapping.action(for: .threeFingerCircleCounterClockwise), .browser(.hardReload))
-        XCTAssertEqual(mapping.action(for: .oneFingerCircleClockwise), .browser(.forward))
-        XCTAssertEqual(mapping.action(for: .oneFingerCircleCounterClockwise), .browser(.back))
+        XCTAssertEqual(mapping.action(for: .oneFingerCircleClockwise), .browser(.reopenClosedTab))
+        XCTAssertEqual(mapping.action(for: .oneFingerCircleCounterClockwise), .browser(.closeTab))
     }
 
     func testUnboundZoneTapFallsBackToThePlainTap() {
@@ -50,6 +56,24 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertEqual(mapping.action(for: .threeFingerTapLeft), .browser(.reload))
         XCTAssertNil(mapping.ownAction(for: .threeFingerTapLeft))
         XCTAssertNil(mapping.action(for: .zoneTap(fingers: 4, zone: .right)))
+    }
+
+    func testUnboundCornerFallsBackToItsSideThenThePlainTap() {
+        // e.g. assignments saved by 0.4, before corners existed.
+        var mapping = GestureMapping([.threeFingerTap: .browser(.reload), .threeFingerTapLeft: .browser(.previousTab)])
+        XCTAssertEqual(mapping.action(for: .threeFingerTapTopLeft), .browser(.previousTab))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapBottomRight), .browser(.reload))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapTop), .browser(.reload))
+        mapping.bind(.threeFingerTapTopLeft, to: .browser(.scrollToTop))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapTopLeft), .browser(.scrollToTop))
+        XCTAssertEqual(mapping.action(for: .threeFingerTapBottomLeft), .browser(.previousTab))
+    }
+
+    func testTapGridCoversEveryZoneOnce() {
+        let grid = TrackpadGesture.threeFingerTapGrid.flatMap { $0 }
+        XCTAssertEqual(grid.count, 9)
+        XCTAssertEqual(Set(grid).count, 9)
+        XCTAssertEqual(Set(grid), Set(TapZone.allCases.map { TrackpadGesture.zoneTap(fingers: 3, zone: $0) } + [.threeFingerTap]))
     }
 
     func testMappingCodableRoundTripAndForwardCompatibility() throws {
@@ -136,6 +160,27 @@ final class MappingAndResolverTests: XCTestCase {
         XCTAssertTrue(next?.flags.contains([.maskCommand, .maskAlternate, .maskSecondaryFn, .maskNumericPad]) ?? false)
 
         XCTAssertNil(resolver.resolve(KeyboardShortcut(.character("q"), [.command])))
+    }
+
+    func testPageKeysCarryTheFnFlagOnly() {
+        struct NoCharacters: KeyCodeResolving {
+            func keyCode(for character: Character) -> CGKeyCode? { nil }
+        }
+        let resolver = KeystrokeResolver(keyCodes: NoCharacters())
+        XCTAssertEqual(resolver.resolve(KeyboardShortcut(.home, [])), ResolvedKeystroke(keyCode: KeyCode.home, flags: .maskSecondaryFn))
+        XCTAssertEqual(resolver.resolve(KeyboardShortcut(.end, [])), ResolvedKeystroke(keyCode: KeyCode.end, flags: .maskSecondaryFn))
+        XCTAssertEqual(resolver.resolve(KeyboardShortcut(.pageUp, [])), ResolvedKeystroke(keyCode: KeyCode.pageUp, flags: .maskSecondaryFn))
+        XCTAssertEqual(resolver.resolve(KeyboardShortcut(.pageDown, [])), ResolvedKeystroke(keyCode: KeyCode.pageDown, flags: .maskSecondaryFn))
+    }
+
+    func testPageActionsUseTheSameKeysInEveryBrowser() {
+        let expected: [BrowserAction: KeyboardKey] = [.scrollToTop: .home, .scrollToBottom: .end, .pageUp: .pageUp, .pageDown: .pageDown]
+        for browser in Browser.allCases {
+            for (action, key) in expected {
+                XCTAssertEqual(BrowserCommandResolver.standard.command(for: action, in: browser),
+                               .shortcut(KeyboardShortcut(key, [])), "\(action) in \(browser)")
+            }
+        }
     }
 
     func testEveryActionHasAFeedbackSymbol() {

@@ -40,6 +40,10 @@ enum KeyboardKey: Hashable, Sendable {
     case rightArrow
     case upArrow
     case downArrow
+    case home
+    case end
+    case pageUp
+    case pageDown
 
     var displayName: String {
         switch self {
@@ -49,6 +53,10 @@ enum KeyboardKey: Hashable, Sendable {
         case .rightArrow: return "→"
         case .upArrow: return "↑"
         case .downArrow: return "↓"
+        case .home: return "↖"
+        case .end: return "↘"
+        case .pageUp: return "⇞"
+        case .pageDown: return "⇟"
         }
     }
 
@@ -57,6 +65,15 @@ enum KeyboardKey: Hashable, Sendable {
     var isArrow: Bool {
         switch self {
         case .leftArrow, .rightArrow, .upArrow, .downArrow: return true
+        default: return false
+        }
+    }
+
+    /// Home / End / Page Up / Page Down are typed as Fn + arrow on Mac keyboards and
+    /// carry the Fn flag (but not the numeric-pad flag).
+    var isNavigation: Bool {
+        switch self {
+        case .home, .end, .pageUp, .pageDown: return true
         default: return false
         }
     }

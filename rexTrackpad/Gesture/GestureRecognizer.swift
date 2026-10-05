@@ -9,6 +9,9 @@ struct GestureMetrics: Equatable, Sendable {
     var translation: CGVector
     /// Largest movement of a single finger since it landed.
     var maxFingerMovement: Double
+    /// For taps: centre of the landing points in normalised trackpad coordinates
+    /// (y = 0 at the bottom).
+    var position: CGPoint?
 
     var distance: Double {
         hypot(Double(translation.dx), Double(translation.dy))
@@ -19,8 +22,10 @@ struct GestureMetrics: Equatable, Sendable {
     }
 
     var summary: String {
-        String(format: "fingers=%d duration=%.3fs dx=%.3f dy=%.3f distance=%.3f velocity=%.2f/s maxMove=%.3f",
-               fingers, duration, Double(translation.dx), Double(translation.dy), distance, velocity, maxFingerMovement)
+        let text = String(format: "fingers=%d duration=%.3fs dx=%.3f dy=%.3f distance=%.3f velocity=%.2f/s maxMove=%.3f",
+                          fingers, duration, Double(translation.dx), Double(translation.dy), distance, velocity, maxFingerMovement)
+        guard let position else { return text }
+        return text + String(format: " at=(%.3f, %.3f)", Double(position.x), Double(position.y))
     }
 }
 
@@ -410,19 +415,12 @@ final class GestureRecognizer {
         }
     }
 
-    /// A tap on the left / right side of the trackpad becomes a zone tap, judged by
-    /// the centre of the landing points.
+    /// A tap near an edge or corner of the trackpad becomes a zone tap, judged by the
+    /// centre of the landing points.
     private func tapGesture(fingers: Int) -> TrackpadGesture {
-        let xs = session.origins.values.map { Double($0.x) }
-        guard !xs.isEmpty else { return .tap(fingers: fingers) }
-        let centre = xs.reduce(0, +) / Double(xs.count)
-        if centre < configuration.tapZoneEdge {
-            return .zoneTap(fingers: fingers, zone: .left)
-        }
-        if centre > 1 - configuration.tapZoneEdge {
-            return .zoneTap(fingers: fingers, zone: .right)
-        }
-        return .tap(fingers: fingers)
+        guard let centre = landingCentre() else { return .tap(fingers: fingers) }
+        guard let zone = configuration.tapZone(at: centre) else { return .tap(fingers: fingers) }
+        return .zoneTap(fingers: fingers, zone: zone)
     }
 
     // MARK: - Circles
@@ -590,7 +588,15 @@ final class GestureRecognizer {
     // MARK: - Geometry helpers
 
     private func metrics(fingers: Int, duration: TimeInterval) -> GestureMetrics {
-        GestureMetrics(fingers: fingers, duration: duration, translation: .zero, maxFingerMovement: session.maxMovement)
+        GestureMetrics(fingers: fingers, duration: duration, translation: .zero, maxFingerMovement: session.maxMovement,
+                       position: landingCentre())
+    }
+
+    private func landingCentre() -> CGPoint? {
+        let origins = session.origins.values
+        guard !origins.isEmpty else { return nil }
+        let n = CGFloat(origins.count)
+        return CGPoint(x: origins.reduce(0) { $0 + $1.x } / n, y: origins.reduce(0) { $0 + $1.y } / n)
     }
 
     private func landingSpread() -> TimeInterval {

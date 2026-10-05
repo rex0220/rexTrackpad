@@ -33,6 +33,12 @@ private enum CommonCommands {
     static let forward = BrowserCommand.shortcut(KeyboardShortcut(.character("]"), [.command]))
     // ⌘⇧-click opens a link in a new tab and switches to it in all four browsers.
     static let openLinkInNewTab = BrowserCommand.click([.command, .shift])
+    // Home / End / Page Up / Page Down scroll the page in all four browsers and, unlike
+    // Space / ⇧Space, never type into a focused text field.
+    static let scrollToTop = BrowserCommand.shortcut(KeyboardShortcut(.home, []))
+    static let scrollToBottom = BrowserCommand.shortcut(KeyboardShortcut(.end, []))
+    static let pageUp = BrowserCommand.shortcut(KeyboardShortcut(.pageUp, []))
+    static let pageDown = BrowserCommand.shortcut(KeyboardShortcut(.pageDown, []))
 }
 
 /// Google Chrome, Microsoft Edge and other Chromium browsers.
@@ -50,6 +56,10 @@ struct ChromiumCommandProvider: BrowserCommandProvider {
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab
+        case .scrollToTop: return CommonCommands.scrollToTop
+        case .scrollToBottom: return CommonCommands.scrollToBottom
+        case .pageUp: return CommonCommands.pageUp
+        case .pageDown: return CommonCommands.pageDown
         }
     }
 }
@@ -68,6 +78,10 @@ struct SafariCommandProvider: BrowserCommandProvider {
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab
+        case .scrollToTop: return CommonCommands.scrollToTop
+        case .scrollToBottom: return CommonCommands.scrollToBottom
+        case .pageUp: return CommonCommands.pageUp
+        case .pageDown: return CommonCommands.pageDown
         }
     }
 }
@@ -87,6 +101,10 @@ struct FirefoxCommandProvider: BrowserCommandProvider {
         case .back: return CommonCommands.back
         case .forward: return CommonCommands.forward
         case .openLinkInNewTab: return CommonCommands.openLinkInNewTab
+        case .scrollToTop: return CommonCommands.scrollToTop
+        case .scrollToBottom: return CommonCommands.scrollToBottom
+        case .pageUp: return CommonCommands.pageUp
+        case .pageDown: return CommonCommands.pageDown
         }
     }
 }

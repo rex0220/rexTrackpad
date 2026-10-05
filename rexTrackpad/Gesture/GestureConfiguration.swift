@@ -26,8 +26,10 @@ struct GestureConfiguration: Equatable, Sendable {
     /// All fingers must land within this time of each other.
     var tapMaximumLandingSpread: TimeInterval = 0.15
     /// Taps whose finger centre is within this fraction of the width from the left /
-    /// right edge are zone taps (left / right side).
+    /// right edge are zone taps (left / right side, or a corner).
     var tapZoneEdge: Double = 0.35
+    /// The same for the top / bottom edge, as a fraction of the height.
+    var tapZoneEdgeVertical: Double = 0.30
 
     // MARK: Swipe
 
@@ -78,12 +80,22 @@ struct GestureConfiguration: Equatable, Sendable {
     var aspectRatio: Double = 1.6
 
     static let `default` = GestureConfiguration()
+
+    /// The zone of the 3 × 3 tap grid containing `point` (normalised, y = 0 at the
+    /// bottom), or nil for the middle cell.
+    func tapZone(at point: CGPoint) -> TapZone? {
+        func band(_ value: Double, edge: Double) -> Int {
+            value < edge ? -1 : (value > 1 - edge ? 1 : 0)
+        }
+        return TapZone(column: band(Double(point.x), edge: tapZoneEdge),
+                       row: band(Double(point.y), edge: tapZoneEdgeVertical))
+    }
 }
 
 extension GestureConfiguration: Codable {
     private enum CodingKeys: String, CodingKey {
         case minimumFingers, maximumFingers
-        case tapMaximumDuration, tapMaximumMovement, tapMaximumLandingSpread, tapZoneEdge
+        case tapMaximumDuration, tapMaximumMovement, tapMaximumLandingSpread, tapZoneEdge, tapZoneEdgeVertical
         case settleTime, swipeMinimumDistance, swipeMaximumDuration, swipeMinimumVelocity
         case swipeDirectionRatio, swipeFingerAgreement
         case circleMinimumTurn, circleMinimumRadius, circleMaximumRadiusVariation
@@ -109,6 +121,7 @@ extension GestureConfiguration: Codable {
         try decode(\.tapMaximumMovement, .tapMaximumMovement)
         try decode(\.tapMaximumLandingSpread, .tapMaximumLandingSpread)
         try decode(\.tapZoneEdge, .tapZoneEdge)
+        try decode(\.tapZoneEdgeVertical, .tapZoneEdgeVertical)
         try decode(\.settleTime, .settleTime)
         try decode(\.swipeMinimumDistance, .swipeMinimumDistance)
         try decode(\.swipeMaximumDuration, .swipeMaximumDuration)

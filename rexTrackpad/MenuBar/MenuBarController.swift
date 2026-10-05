@@ -145,6 +145,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 conflict: { controller.activeConflict(for: $0) },
                 isInstalled: { controller.browserDetector.isInstalled($0) },
                 permissions: permissions,
+                recentTaps: controller.recentTaps,
                 close: close,
                 initialTab: tab
             )

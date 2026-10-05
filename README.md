@@ -22,8 +22,9 @@ clicking, scrolling and macOS gestures keep working.
 - New tab
 - Close tab
 - Open the link under the pointer in a new tab
-- Position-aware taps: a 3-finger tap on the left / right side of the trackpad
-  can do something different from a tap in the middle
+- Top / bottom of the page, page up / page down
+- Position-aware taps: the trackpad is split into a 3 × 3 grid, so a 3-finger tap
+  in a corner, on an edge or in the middle can each do something different
 - Circle gestures: draw a circle with three fingers or one finger, clockwise or
   counter-clockwise
 - Reopen the last closed tab
@@ -53,6 +54,8 @@ When any other app is frontmost, gestures do nothing.
 | 3-finger tap (middle) | Reload | ✅ Yes (unless "Look up: Tap with three fingers" is on) |
 | 3-finger tap (left side) | Previous Tab | ✅ Yes (same condition) |
 | 3-finger tap (right side) | Next Tab | ✅ Yes (same condition) |
+| 3-finger tap (top edge) | Top of Page | ✅ Yes (same condition) |
+| 3-finger tap (bottom-left / bottom-right corner) | Page Up / Page Down | ✅ Yes (same condition) |
 | 4-finger tap | Open Link in New Tab (link under the pointer) | ✅ Yes |
 | 3-finger swipe left | Previous Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
 | 3-finger swipe right | Next Tab | ⚠️ Only if macOS is not using 3-finger horizontal swipes |
@@ -62,8 +65,8 @@ When any other app is frontmost, gestures do nothing.
 | 4-finger swipe right | Forward | ⚠️ Only if macOS is not using 4-finger horizontal swipes |
 | 3-finger circle, clockwise | Reopen Closed Tab | ⚠️ Only if macOS is not using 3-finger swipes (a circle starts like a swipe) |
 | 3-finger circle, counter-clockwise | Hard Reload | ⚠️ Same condition |
-| 1-finger circle, clockwise | Forward | ✅ Yes — the pointer moves while you draw |
-| 1-finger circle, counter-clockwise | Back | ✅ Yes (same) |
+| 1-finger circle, clockwise | Reopen Closed Tab | ✅ Yes — the pointer moves while you draw |
+| 1-finger circle, counter-clockwise | Close Tab | ✅ Yes (same) |
 
 ### Why some gestures are "off" by default
 
@@ -105,8 +108,8 @@ The settings window has four tabs and closes with **Close**, esc or ⌘W:
 
 | Tab | Contents |
 |---|---|
-| **Assignments** | One pop-up per gesture. Gestures that macOS also uses are marked *Also used by macOS* (hover for the macOS feature); the *Avoid macOS gesture conflicts* and *Show a symbol near the pointer when a gesture works* switches and *Restore Default Gestures* are here too. |
-| **Sensitivity** | Tap, swipe and repeat-protection thresholds. |
+| **Assignments** | One pop-up per gesture; the 3-finger taps are laid out as a 3 × 3 grid like the trackpad. Gestures that macOS also uses are marked *Also used by macOS* (hover for the macOS feature); the *Avoid macOS gesture conflicts* and *Show a symbol near the pointer when a gesture works* switches and *Restore Default Gestures* are here too. |
+| **Sensitivity** | Tap, swipe and repeat-protection thresholds. The tap zone sizes come with a preview that shows where your last 3-finger taps landed and which area they counted as. |
 | **Browsers** | Turn gestures on / off per browser; browsers that are not installed are marked. |
 | **Permissions** | Accessibility / Input Monitoring status and whether touch frames arrive. |
 
@@ -277,10 +280,17 @@ different shortcuts only needs its own provider.
 | Back | ⌘[ | ⌘[ | ⌘[ |
 | Forward | ⌘] | ⌘] | ⌘] |
 | Open Link in New Tab | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer | ⌘⇧-click at the pointer |
+| Top of Page / Bottom of Page | Home / End | Home / End | Home / End |
+| Page Up / Page Down | Page Up / Page Down | Page Up / Page Down | Page Up / Page Down |
 
 Firefox uses ⌥⌘→/← because ⌃⇥ can be set to cycle tabs in recently-used order.
 Character keys (`R`, `T`, `W`, `[`, `]`) are resolved against the active keyboard
 layout when sent, so ⌘[ / ⌘] also work on JIS and other non-US keyboards.
+
+The page actions send Home / End / Page Up / Page Down rather than Space / ⇧Space,
+which would type a space into a focused text field. Like any key, they go to what
+has keyboard focus: in a text field they move the cursor instead of the page, and
+in a scrollable part of the page (a chat pane, say) they scroll that part.
 
 Because the browsers' own shortcuts are sent (rather than reading the tab strip),
 tab switching also works with vertical tabs (Chrome, Edge and Firefox vertical
@@ -324,10 +334,12 @@ Permissions / Settings windows), `Permissions/`, `Login/`, `Settings/`,
   most one gesture** (`idle → tracking → recognized / waitingForRelease → idle`).
 - **Tap**: max finger count ≥ 3, all fingers land within 0.15 s, whole tap ≤ 0.35 s,
   no finger moves more than 0.05, and no physical click happened.
-  - The centre of the landing points decides the side: within 35 % of the width
-    from the left / right edge is a *left* / *right side* tap, anything else is a
-    plain tap (the width is adjustable in Settings › *Sensitivity*). A side tap without
-    its own assignment does whatever the plain tap does.
+  - The centre of the landing points decides the area of a 3 × 3 grid: within 35 %
+    of the width from the left / right edge is the *left* / *right side*, within 30 %
+    of the height from the top / bottom edge is the *top* / *bottom edge*, both at
+    once is a *corner*, and the middle cell is a plain tap (both sizes are adjustable
+    in Settings › *Sensitivity*). An area without its own assignment falls back:
+    corner → its side → plain tap, and top / bottom edge → plain tap.
 - **Swipe**: average travel ≥ 0.12 (trackpad heights) within 0.6 s, dominant axis
   ≥ 2× the other (rejects diagonals), speed ≥ 0.4/s, and every finger moving the
   same way (rejects pinch/rotate).

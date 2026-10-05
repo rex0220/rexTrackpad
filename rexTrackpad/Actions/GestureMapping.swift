@@ -19,6 +19,10 @@ struct GestureMapping: Equatable, Sendable {
         // Tap on the left / right side of the trackpad to move between tabs.
         .threeFingerTapLeft: .browser(.previousTab),
         .threeFingerTapRight: .browser(.nextTab),
+        // Top edge → top of the page; bottom corners → one screen up / down.
+        .threeFingerTapTop: .browser(.scrollToTop),
+        .threeFingerTapBottomLeft: .browser(.pageUp),
+        .threeFingerTapBottomRight: .browser(.pageDown),
         // Point at a link and tap with four fingers. Hard Reload is available from the menu.
         .fourFingerTap: .browser(.openLinkInNewTab),
 
@@ -35,14 +39,22 @@ struct GestureMapping: Equatable, Sendable {
         .threeFingerCircleClockwise: .browser(.reopenClosedTab),
         .threeFingerCircleCounterClockwise: .browser(.hardReload),
         // One-finger circles need no macOS settings changes.
-        .oneFingerCircleClockwise: .browser(.forward),
-        .oneFingerCircleCounterClockwise: .browser(.back),
+        .oneFingerCircleClockwise: .browser(.reopenClosedTab),
+        .oneFingerCircleCounterClockwise: .browser(.closeTab),
     ])
 
-    /// The action to run: the gesture's own binding, else its fallback's
-    /// (a zone tap without a binding acts like the plain tap).
+    /// The action to run: the gesture's own binding, else the first one along its
+    /// fallbacks (an unbound corner tap acts like its side, an unbound side like the
+    /// plain tap).
     func action(for gesture: TrackpadGesture) -> GestureAction? {
-        bindings[gesture] ?? gesture.fallback.flatMap { bindings[$0] }
+        var current: TrackpadGesture? = gesture
+        while let candidate = current {
+            if let action = bindings[candidate] {
+                return action
+            }
+            current = candidate.fallback
+        }
+        return nil
     }
 
     /// The gesture's own binding, ignoring fallbacks (for the menu).

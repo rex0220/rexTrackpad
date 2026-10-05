@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Planned additions (not implemented in v0.1): restoreTab, pinTab, duplicateTab,
 /// focusAddressBar, find, showDownloads, developerTools, newWindow, privateWindow,
-/// toggleFullScreen, scrollToTop, scrollToBottom. Each needs a case here plus an
+/// toggleFullScreen. Each needs a case here plus an
 /// entry in the relevant `BrowserCommandProvider`s.
 enum BrowserAction: String, Codable, CaseIterable, Sendable {
     case reload
@@ -19,6 +19,11 @@ enum BrowserAction: String, Codable, CaseIterable, Sendable {
     case forward
     /// Opens the link under the mouse pointer in a new tab and switches to it.
     case openLinkInNewTab
+    /// Scrolls to the top / bottom of the page, or one screen up / down.
+    case scrollToTop
+    case scrollToBottom
+    case pageUp
+    case pageDown
 
     var displayName: String {
         switch self {
@@ -32,6 +37,10 @@ enum BrowserAction: String, Codable, CaseIterable, Sendable {
         case .back: return String(localized: "Back")
         case .forward: return String(localized: "Forward")
         case .openLinkInNewTab: return String(localized: "Open Link in New Tab")
+        case .scrollToTop: return String(localized: "Top of Page")
+        case .scrollToBottom: return String(localized: "Bottom of Page")
+        case .pageUp: return String(localized: "Page Up")
+        case .pageDown: return String(localized: "Page Down")
         }
     }
 }

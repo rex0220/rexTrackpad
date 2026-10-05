@@ -17,6 +17,9 @@ final class AppController {
     let engine: GestureEngine
     let dispatcher: ActionDispatcher
 
+    /// Where recent taps landed, for the zone preview in the settings.
+    let recentTaps = RecentTaps()
+
     #if DEBUG
     let debugMonitor = DebugMonitor()
     #endif
@@ -54,10 +57,16 @@ final class AppController {
             self?.handle(gesture)
         }
 
+        let recentTaps = recentTaps
         #if DEBUG
         let monitor = debugMonitor
         engine.onDiagnostics = { monitor.ingest($0) }
-        engine.onRecognizerEvent = { monitor.record($0) }
+        engine.onRecognizerEvent = { event in
+            recentTaps.record(event)
+            monitor.record(event)
+        }
+        #else
+        engine.onRecognizerEvent = { recentTaps.record($0) }
         #endif
 
         settingsObserver = NotificationCenter.default.addObserver(

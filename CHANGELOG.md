@@ -1,5 +1,40 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Page actions**: Top of Page, Bottom of Page, Page Up and Page Down (Home / End /
+  Page Up / Page Down in every browser). By default a 3-finger tap on the top edge
+  goes to the top of the page, and taps in the bottom-left / bottom-right corners
+  page up / down.
+- **Tap zones in a 3 × 3 grid**: a 3-finger tap now also tells the top and bottom
+  edges and the four corners apart, besides the left / right sides and the middle.
+  Settings › Assignments shows the 3-finger taps as a grid laid out like the
+  trackpad. An area without its own action falls back to its side (corners) or to
+  the plain tap, so existing assignments keep working.
+- Settings › Sensitivity: *Top / bottom zone height*, and a preview of the zones with
+  your last 3-finger taps on it, to tune the zone sizes on your trackpad.
+
+### Changed
+- One-finger circles now reopen the last closed tab (clockwise) and close the tab
+  (counter-clockwise) by default (were Forward / Back). Existing saved assignments
+  are kept.
+- Settings › Assignments lists the one-finger circles right below the 3-finger taps.
+
+### 日本語
+- **追加**: ページ操作「ページの先頭へ」「ページの最後へ」「1 画面上へ」「1 画面下へ」
+  （どのブラウザーでも Home / End / Page Up / Page Down を送ります）。初期設定では、
+  3本指タップの上端が「ページの先頭へ」、左下・右下の隅が「1 画面上へ」「1 画面下へ」です。
+- **追加**: 3本指タップの区域を 3×3 にしました。左側・右側・中央に加えて、上端・下端と
+  4 つの隅を区別します。設定の「割り当て」タブでは、3本指タップをトラックパッドと同じ並びの
+  マスで選びます。割り当てがない区域は、隅ならその側（左側・右側）、それ以外は普通のタップと
+  同じ操作になるので、今の割り当てはそのまま使えます。
+- **追加**: 設定の「感度」タブに「上下の区域の高さ」と、最近の3本指タップの位置を区域の図に
+  表示するプレビューを追加しました。お使いのトラックパッドに合わせて区域の大きさを調整できます。
+- **変更**: 1本指の円の初期設定を、時計回りが「閉じたタブを開き直す」、反時計回りが「タブを閉じる」
+  に変更しました（以前は進む／戻る）。保存済みの割り当てはそのまま残ります。
+- **変更**: 設定の「割り当て」タブで、1本指の円を3本指タップのすぐ下に表示するようにしました。
+
 ## 0.4.1 — 2026-10-01
 
 ### Fixed

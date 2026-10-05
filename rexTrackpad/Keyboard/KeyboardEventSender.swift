@@ -20,6 +20,10 @@ struct KeystrokeResolver {
         case .rightArrow: keyCode = KeyCode.rightArrow
         case .upArrow: keyCode = KeyCode.upArrow
         case .downArrow: keyCode = KeyCode.downArrow
+        case .home: keyCode = KeyCode.home
+        case .end: keyCode = KeyCode.end
+        case .pageUp: keyCode = KeyCode.pageUp
+        case .pageDown: keyCode = KeyCode.pageDown
         }
         guard let keyCode else { return nil }
 
@@ -27,6 +31,8 @@ struct KeystrokeResolver {
         if shortcut.key.isArrow {
             flags.insert(.maskSecondaryFn)
             flags.insert(.maskNumericPad)
+        } else if shortcut.key.isNavigation {
+            flags.insert(.maskSecondaryFn)
         }
         return ResolvedKeystroke(keyCode: keyCode, flags: flags)
     }

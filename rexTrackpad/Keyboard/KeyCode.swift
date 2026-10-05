@@ -8,6 +8,10 @@ enum KeyCode {
     static let rightArrow = CGKeyCode(kVK_RightArrow)
     static let upArrow = CGKeyCode(kVK_UpArrow)
     static let downArrow = CGKeyCode(kVK_DownArrow)
+    static let home = CGKeyCode(kVK_Home)
+    static let end = CGKeyCode(kVK_End)
+    static let pageUp = CGKeyCode(kVK_PageUp)
+    static let pageDown = CGKeyCode(kVK_PageDown)
 
     static let control = CGKeyCode(kVK_Control)
     static let option = CGKeyCode(kVK_Option)

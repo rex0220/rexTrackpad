@@ -27,15 +27,54 @@ enum SwipeDirection: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// Side of the trackpad a tap landed on, judged by the centre of the fingers.
+/// Area of the trackpad a tap landed on, judged by the centre of the fingers. The
+/// surface is split into a 3 × 3 grid; the middle cell is a plain `.tap`.
 enum TapZone: String, Codable, CaseIterable, Sendable {
     case left
     case right
+    case top
+    case bottom
+    case topLeft
+    case topRight
+    case bottomLeft
+    case bottomRight
 
     var displayName: String {
         switch self {
         case .left: return String(localized: "Left side")
         case .right: return String(localized: "Right side")
+        case .top: return String(localized: "Top edge")
+        case .bottom: return String(localized: "Bottom edge")
+        case .topLeft: return String(localized: "Top-left corner")
+        case .topRight: return String(localized: "Top-right corner")
+        case .bottomLeft: return String(localized: "Bottom-left corner")
+        case .bottomRight: return String(localized: "Bottom-right corner")
+        }
+    }
+
+    /// The zone whose binding a corner uses when it has none of its own: its left /
+    /// right side, so bindings made before corners existed keep covering them.
+    var fallback: TapZone? {
+        switch self {
+        case .topLeft, .bottomLeft: return .left
+        case .topRight, .bottomRight: return .right
+        case .left, .right, .top, .bottom: return nil
+        }
+    }
+
+    /// The zone at a column (-1 left, 0 middle, 1 right) and row (-1 bottom, 0 middle,
+    /// 1 top), or nil for the middle cell.
+    init?(column: Int, row: Int) {
+        switch (column, row) {
+        case (-1, 1): self = .topLeft
+        case (0, 1): self = .top
+        case (1, 1): self = .topRight
+        case (-1, 0): self = .left
+        case (1, 0): self = .right
+        case (-1, -1): self = .bottomLeft
+        case (0, -1): self = .bottom
+        case (1, -1): self = .bottomRight
+        default: return nil
         }
     }
 }
@@ -64,8 +103,9 @@ enum CircleDirection: String, Codable, CaseIterable, Sendable {
 /// `.rotate(direction:)`, `.cornerTap(corner:)`, `.chord(...)`.
 enum TrackpadGesture: Hashable, Sendable {
     case tap(fingers: Int)
-    /// A tap on the left or right side of the trackpad. Taps in the middle are plain
-    /// `.tap`, and a zone tap without its own binding behaves like `.tap` (`fallback`).
+    /// A tap near an edge or corner of the trackpad. Taps in the middle are plain
+    /// `.tap`, and a zone tap without its own binding behaves like its fallback
+    /// (corner → side → plain `.tap`).
     case zoneTap(fingers: Int, zone: TapZone)
     case swipe(fingers: Int, direction: SwipeDirection)
     /// A circle drawn with the fingers, judged when they lift.
@@ -74,6 +114,12 @@ enum TrackpadGesture: Hashable, Sendable {
     static let threeFingerTap = TrackpadGesture.tap(fingers: 3)
     static let threeFingerTapLeft = TrackpadGesture.zoneTap(fingers: 3, zone: .left)
     static let threeFingerTapRight = TrackpadGesture.zoneTap(fingers: 3, zone: .right)
+    static let threeFingerTapTop = TrackpadGesture.zoneTap(fingers: 3, zone: .top)
+    static let threeFingerTapBottom = TrackpadGesture.zoneTap(fingers: 3, zone: .bottom)
+    static let threeFingerTapTopLeft = TrackpadGesture.zoneTap(fingers: 3, zone: .topLeft)
+    static let threeFingerTapTopRight = TrackpadGesture.zoneTap(fingers: 3, zone: .topRight)
+    static let threeFingerTapBottomLeft = TrackpadGesture.zoneTap(fingers: 3, zone: .bottomLeft)
+    static let threeFingerTapBottomRight = TrackpadGesture.zoneTap(fingers: 3, zone: .bottomRight)
     static let fourFingerTap = TrackpadGesture.tap(fingers: 4)
 
     static let threeFingerSwipeLeft = TrackpadGesture.swipe(fingers: 3, direction: .left)
@@ -89,11 +135,18 @@ enum TrackpadGesture: Hashable, Sendable {
     static let threeFingerCircleClockwise = TrackpadGesture.circle(fingers: 3, direction: .clockwise)
     static let threeFingerCircleCounterClockwise = TrackpadGesture.circle(fingers: 3, direction: .counterClockwise)
 
-    /// Gestures offered in the menu, in display order.
-    static let configurable: [TrackpadGesture] = [
-        .threeFingerTap,
-        .threeFingerTapLeft,
-        .threeFingerTapRight,
+    /// Three-finger taps laid out as on the trackpad, top row first.
+    static let threeFingerTapGrid: [[TrackpadGesture]] = [
+        [.threeFingerTapTopLeft, .threeFingerTapTop, .threeFingerTapTopRight],
+        [.threeFingerTapLeft, .threeFingerTap, .threeFingerTapRight],
+        [.threeFingerTapBottomLeft, .threeFingerTapBottom, .threeFingerTapBottomRight],
+    ]
+
+    /// Gestures offered in the settings, in display order (the three-finger taps are
+    /// shown as `threeFingerTapGrid`).
+    static let configurable: [TrackpadGesture] = threeFingerTapGrid.flatMap { $0 } + [
+        .oneFingerCircleClockwise,
+        .oneFingerCircleCounterClockwise,
         .fourFingerTap,
         .threeFingerSwipeLeft,
         .threeFingerSwipeRight,
@@ -103,8 +156,6 @@ enum TrackpadGesture: Hashable, Sendable {
         .fourFingerSwipeRight,
         .threeFingerCircleClockwise,
         .threeFingerCircleCounterClockwise,
-        .oneFingerCircleClockwise,
-        .oneFingerCircleCounterClockwise,
     ]
 
     var fingerCount: Int {
@@ -116,8 +167,8 @@ enum TrackpadGesture: Hashable, Sendable {
 
     /// The gesture whose binding applies when this one has none of its own.
     var fallback: TrackpadGesture? {
-        if case .zoneTap(let fingers, _) = self {
-            return .tap(fingers: fingers)
+        if case .zoneTap(let fingers, let zone) = self {
+            return zone.fallback.map { .zoneTap(fingers: fingers, zone: $0) } ?? .tap(fingers: fingers)
         }
         return nil
     }

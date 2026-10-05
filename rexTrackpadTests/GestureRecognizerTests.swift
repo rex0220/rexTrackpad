@@ -112,6 +112,29 @@ final class GestureRecognizerTests: XCTestCase {
         XCTAssertEqual(recognized, [.threeFingerTap, .threeFingerTapLeft, .threeFingerTapRight])
     }
 
+    func testTapZonesUseTheVerticalPositionToo() {
+        send(0.0, fingers(3, y: 0.85)); send(0.1, [])               // centre (0.4, 0.85) → top edge
+        send(1.0, fingers(3, y: 0.10)); send(1.1, [])               // centre (0.4, 0.10) → bottom edge
+        send(2.0, fingers(3, x: 0.05, y: 0.85)); send(2.1, [])      // centre (0.15, 0.85) → top-left
+        send(3.0, fingers(3, x: 0.70, y: 0.85)); send(3.1, [])      // centre (0.80, 0.85) → top-right
+        send(4.0, fingers(3, x: 0.05, y: 0.10)); send(4.1, [])      // centre (0.15, 0.10) → bottom-left
+        send(5.0, fingers(3, x: 0.70, y: 0.10)); send(5.1, [])      // centre (0.80, 0.10) → bottom-right
+        XCTAssertEqual(recognized, [
+            .threeFingerTapTop, .threeFingerTapBottom,
+            .threeFingerTapTopLeft, .threeFingerTapTopRight,
+            .threeFingerTapBottomLeft, .threeFingerTapBottomRight,
+        ])
+    }
+
+    func testTapMetricsCarryTheLandingCentre() {
+        send(0.0, fingers(3, x: 0.70, y: 0.85)); send(0.1, [])
+        guard case .recognized(_, let metrics)? = events.last, let position = metrics.position else {
+            return XCTFail("no tap position")
+        }
+        XCTAssertEqual(Double(position.x), 0.80, accuracy: 0.001)
+        XCTAssertEqual(Double(position.y), 0.85, accuracy: 0.001)
+    }
+
     func testFourFingerTapIsNotReportedAsThreeFingerTap() {
         send(0.00, fingers(3))
         send(0.01, fingers(3))

@@ -110,6 +110,10 @@ extension BrowserAction {
         case .back: return "chevron.backward.circle"
         case .forward: return "chevron.forward.circle"
         case .openLinkInNewTab: return "plus.rectangle.on.rectangle"
+        case .scrollToTop: return "arrow.up.to.line"
+        case .scrollToBottom: return "arrow.down.to.line"
+        case .pageUp: return "chevron.up"
+        case .pageDown: return "chevron.down"
         }
     }
 }

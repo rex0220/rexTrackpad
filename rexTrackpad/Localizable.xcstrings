@@ -154,6 +154,46 @@
         }
       }
     },
+    "Bottom edge": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下端"
+          }
+        }
+      }
+    },
+    "Bottom of Page": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ページの最後へ"
+          }
+        }
+      }
+    },
+    "Bottom-left corner": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左下の隅"
+          }
+        }
+      }
+    },
+    "Bottom-right corner": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右下の隅"
+          }
+        }
+      }
+    },
     "Browsers": {
       "localizations": {
         "ja": {
@@ -175,7 +215,14 @@
       }
     },
     "Clear": {
-      "shouldTranslate": false
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "消去"
+          }
+        }
+      }
     },
     "Clockwise": {
       "localizations": {
@@ -330,6 +377,16 @@
         }
       }
     },
+    "Last tap: %@": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最後のタップ: %@"
+          }
+        }
+      }
+    },
     "Launch at Login": {
       "localizations": {
         "ja": {
@@ -396,6 +453,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "最大移動量"
+          }
+        }
+      }
+    },
+    "Middle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中央"
           }
         }
       }
@@ -546,6 +613,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "システム設定を開く"
+          }
+        }
+      }
+    },
+    "Page Down": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 画面下へ"
+          }
+        }
+      }
+    },
+    "Page Up": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 画面上へ"
           }
         }
       }
@@ -820,12 +907,72 @@
         }
       }
     },
+    "Tap with three fingers to see where taps land and which area they count as.": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 本指でタップすると、タップした位置と、どの区域と判定されたかを表示します。"
+          }
+        }
+      }
+    },
     "Three-finger drag": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
             "value": "3本指のドラッグ"
+          }
+        }
+      }
+    },
+    "Top / bottom zone height": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上下の区域の高さ"
+          }
+        }
+      }
+    },
+    "Top edge": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上端"
+          }
+        }
+      }
+    },
+    "Top of Page": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ページの先頭へ"
+          }
+        }
+      }
+    },
+    "Top-left corner": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左上の隅"
+          }
+        }
+      }
+    },
+    "Top-right corner": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右上の隅"
           }
         }
       }
@@ -906,6 +1053,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "タッチ待ち"
+          }
+        }
+      }
+    },
+    "Where the fingers land": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指を置いた場所ごと"
           }
         }
       }
