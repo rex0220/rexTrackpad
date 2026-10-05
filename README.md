@@ -9,7 +9,7 @@ browser commands for Google Chrome, Safari, Microsoft Edge and Firefox. It only
 **observes** touches — it never blocks or consumes trackpad events — so normal
 clicking, scrolling and macOS gestures keep working.
 
-> Status: v0.4 (early development). See [CHANGELOG](CHANGELOG.md).
+> Status: v0.5 (early development). See [CHANGELOG](CHANGELOG.md).
 
 📘 **Introduction article (Japanese, with screenshots)**: [Qiita](https://qiita.com/rex0220/items/48411ca049dc6f3fc5e9)
 

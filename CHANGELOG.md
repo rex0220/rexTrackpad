@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 — 2026-10-05
 
 ### Added
 - **Page actions**: Top of Page, Bottom of Page, Page Up and Page Down (Home / End /
